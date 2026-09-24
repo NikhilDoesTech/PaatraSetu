@@ -15,9 +15,13 @@
   let refreshInProgress = null;
   const signupDrafts = {};
   const staticDemoHost = location.hostname.endsWith('github.io') || (['localhost', '127.0.0.1'].includes(location.hostname) && location.port !== '8001');
-  const fallbackCoords = { lat: 12.9716, lon: 77.5946 };
   const indianStates = ['Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Andaman and Nicobar Islands', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu', 'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry'];
-  const knownLocations = { jaipur: { lat: 26.9124, lon: 75.7873 }, achrol: { lat: 27.1332, lon: 75.9566 }, bengaluru: { lat: 12.9716, lon: 77.5946 }, delhi: { lat: 28.6139, lon: 77.209 }, mumbai: { lat: 19.076, lon: 72.8777 }, hyderabad: { lat: 17.385, lon: 78.4867 }, chennai: { lat: 13.0827, lon: 80.2707 }, kolkata: { lat: 22.5726, lon: 88.3639 } };
+  const knownPincodes = {
+    '302001': { lat: 26.9289111, lon: 75.7902348 },
+    '303002': { lat: 27.1248220, lon: 75.9569015 },
+    '303003': { lat: 27.4446390, lon: 76.0789556 },
+    '303007': { lat: 26.8338936, lon: 75.5637153 }
+  };
 
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const initials = name => (name || '?').trim().split(/\s+/).slice(0, 2).map(x => x[0] || '').join('').toUpperCase();
@@ -35,15 +39,15 @@
   };
   async function resolvePincode(pincode, town, stateName) {
     if (!/^\d{6}$/.test(pincode)) throw new Error('Enter a valid 6-digit Indian pincode.');
-    const known = knownLocations[town.trim().toLowerCase()];
-    if (known) return known;
+    if (pendingCoords) return pendingCoords;
+    if (knownPincodes[pincode]) return knownPincodes[pincode];
     try {
       const response = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&country=India&postalcode=${encodeURIComponent(pincode)}`);
       const places = await response.json();
-      if (places[0]) return { lat: Number(places[0].lat), lon: Number(places[0].lon) };
-    } catch { /* The server/GPS coordinates remain the fallback when geocoding is unavailable. */ }
-    if (pendingCoords) return pendingCoords;
-    if (staticDemoHost) return fallbackCoords;
+      const lat = Number(places[0]?.lat);
+      const lon = Number(places[0]?.lon);
+      if (Number.isFinite(lat) && Number.isFinite(lon)) return { lat, lon };
+    } catch { /* A GPS tag or a known pincode is required when geocoding is unavailable. */ }
     throw new Error(`We could not locate pincode ${pincode}. Check the pincode or use GPS.`);
   }
 
@@ -412,12 +416,39 @@
   async function submitSignin(form) {
     const error = $('#signin-error');
     const fields = new FormData(form);
+    const email = String(fields.get('email') || '').trim().toLowerCase();
+    const password = String(fields.get('password') || '');
+    if (staticDemoHost) {
+      if (email === 'admin' && password === 'admin') {
+        state.demoMode = true;
+        state.user = demoUser;
+        localStorage.setItem('paatrasetu_demo_session', JSON.stringify(state.user));
+        route = 'home';
+        await refresh();
+        notify('Welcome to the presentation demo.');
+        return;
+      }
+      const accounts = JSON.parse(localStorage.getItem('paatrasetu_demo_accounts') || '[]');
+      const account = accounts.find(item => item.email.toLowerCase() === email && item.password === password);
+      if (!account) {
+        error.textContent = 'This browser does not have that account yet. Create the account from Join the community on this same Pages website, then sign in with its email and password.';
+        return;
+      }
+      state.demoMode = true;
+      state.user = { ...account };
+      delete state.user.password;
+      localStorage.setItem('paatrasetu_demo_session', JSON.stringify(state.user));
+      route = 'home';
+      await refresh();
+      notify(`Welcome back, ${state.user.name.split(' ')[0]}.`);
+      return;
+    }
     try {
-      await request('/api/login', { method: 'POST', body: { email: fields.get('email'), password: fields.get('password') } });
+      await request('/api/login', { method: 'POST', body: { email, password } });
       state.demoMode = false;
       route = 'home'; await refresh(); notify(`Welcome back, ${state.user.name.split(' ')[0]}.`);
     } catch (e) {
-      if (String(fields.get('email')).trim().toLowerCase() === 'admin' && fields.get('password') === 'admin') {
+      if (email === 'admin' && password === 'admin') {
         state.demoMode = true;
         state.user = demoUser;
         route = 'home';
@@ -426,7 +457,7 @@
         return;
       }
       const accounts = JSON.parse(localStorage.getItem('paatrasetu_demo_accounts') || '[]');
-      const account = accounts.find(item => item.email.toLowerCase() === String(fields.get('email')).trim().toLowerCase() && item.password === fields.get('password'));
+      const account = accounts.find(item => item.email.toLowerCase() === email && item.password === password);
       if (account) {
         state.demoMode = true;
         state.user = { ...account };
@@ -467,6 +498,13 @@
   async function acceptDonation(id) {
     try {
       if (state.demoMode) {
+        const donation = state.donations.find(item => item.id === id);
+        const distance = donation ? haversineKm(state.user.coords, donation.coords) : null;
+        if (!donation || donation.status !== 'open' || distance == null || distance > Number(state.user.radiusKm)) {
+          notify('This pickup is outside your selected radius.');
+          await refresh();
+          return;
+        }
         updateDemoDonation(id, { status: 'accepted', volunteerId: state.user.id, volunteerName: state.user.name });
         await refresh(); notify('Pickup accepted. The donor has been updated.'); return;
       }
