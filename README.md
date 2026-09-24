@@ -3,8 +3,7 @@ It's a project for AMIHACKS, But also a foundation for something bigger, Somethi
 
 ## Presentation demo
 
-Run the app through the Python server (GitHub Pages alone cannot provide the API or shared
-donation state):
+For the complete shared SQLite/API demo, run the app through the Python server:
 
 ```bash
 cd docs
@@ -20,3 +19,9 @@ The demo account can post food offers. Volunteers can be created from the Join s
 will see eligible nearby offers in their volunteer dashboard, where they can accept or complete
 a pickup. SMS delivery is intentionally represented by a server-side notification hook in
 `docs/server.py`; connect that hook to an SMS provider for production use.
+
+GitHub Pages also includes a browser-only presentation mode. Open the Pages URL, use **Join the
+community** to create a restaurant, individual, or volunteer account, and then sign in again
+with the same email and password. Accounts and demo food offers are stored only in that browser;
+GPS and restaurant proof upload are optional in this mode. The `admin` / `admin` presentation
+login remains available but is intentionally not displayed in the website UI.

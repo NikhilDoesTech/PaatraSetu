@@ -14,6 +14,8 @@
   let eventUserId = null;
   let refreshInProgress = null;
   const signupDrafts = {};
+  const staticDemoHost = location.hostname.endsWith('github.io') || (['localhost', '127.0.0.1'].includes(location.hostname) && location.port !== '8001');
+  const fallbackCoords = { lat: 12.9716, lon: 77.5946 };
 
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const initials = name => (name || '?').trim().split(/\s+/).slice(0, 2).map(x => x[0] || '').join('').toUpperCase();
@@ -316,7 +318,8 @@
     if (!name || (role === 'restaurant' && !restaurantName) || !email || !/^\S+@\S+\.\S+$/.test(email) || password.length < 8 || !phone || !area) {
       error.textContent = 'Please complete the required fields, use a valid email, and choose a password of at least 8 characters.'; return;
     }
-    if (!pendingCoords) { error.textContent = 'Tag your GPS location before creating your account.'; return; }
+    if (!pendingCoords && !staticDemoHost) { error.textContent = 'Tag your GPS location before creating your account.'; return; }
+    pendingCoords ||= fallbackCoords;
     if (role === 'restaurant' && proof && proof.name && proof.size > 0) {
       const allowed = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
       if (!allowed.includes(proof.type)) {
@@ -332,6 +335,34 @@
     if (role === 'individual' && !fields.get('restaurantName')) fields.set('restaurantName', `${name}'s kitchen`);
     fields.set('latitude', String(pendingCoords.lat));
     fields.set('longitude', String(pendingCoords.lon));
+    if (staticDemoHost) {
+      const accounts = JSON.parse(localStorage.getItem('paatrasetu_demo_accounts') || '[]');
+      if (accounts.some(account => account.email.toLowerCase() === email.toLowerCase())) {
+        error.textContent = 'An account with this email already exists in this browser.';
+        return;
+      }
+      const account = {
+        id: `demo-user-${Date.now()}`,
+        role: role === 'individual' ? 'restaurant' : role,
+        name,
+        restaurantName: role === 'individual' ? `${name}'s kitchen` : restaurantName,
+        email,
+        phone,
+        area,
+        city: area.split(',').pop().trim(),
+        coords: pendingCoords,
+        radiusKm: 10,
+        password
+      };
+      localStorage.setItem('paatrasetu_demo_accounts', JSON.stringify([...accounts, account]));
+      state.user = { ...account };
+      delete state.user.password;
+      state.demoMode = true;
+      localStorage.setItem('paatrasetu_demo_session', JSON.stringify(state.user));
+      route = 'home'; pendingCoords = null; await refresh();
+      notify(`Welcome to PaatraSetu, ${name}. This browser demo account is ready.`);
+      return;
+    }
     try {
       await request('/api/signup', { method: 'POST', body: fields, form: true });
       route = 'home'; pendingCoords = null; await refresh();
@@ -353,6 +384,18 @@
         route = 'home';
         await refresh();
         notify('Welcome to the presentation demo.');
+        return;
+      }
+      const accounts = JSON.parse(localStorage.getItem('paatrasetu_demo_accounts') || '[]');
+      const account = accounts.find(item => item.email.toLowerCase() === String(fields.get('email')).trim().toLowerCase() && item.password === fields.get('password'));
+      if (account) {
+        state.demoMode = true;
+        state.user = { ...account };
+        delete state.user.password;
+        localStorage.setItem('paatrasetu_demo_session', JSON.stringify(state.user));
+        route = 'home';
+        await refresh();
+        notify(`Welcome back, ${state.user.name.split(' ')[0]}.`);
       } else error.textContent = e.message;
     }
   }
@@ -369,7 +412,7 @@
     try {
       if (state.demoMode) {
         const donations = JSON.parse(localStorage.getItem('paatrasetu_demo_donations') || '[]');
-        const newDonations = items.map((item, index) => ({ id: `demo-${Date.now()}-${index}`, restaurantId: demoUser.id, restaurantName: demoUser.restaurantName, food: item.food, people: item.people, madeAt: item.madeAt.toISOString(), notes: item.notes, status: 'open', volunteerId: null, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), area: demoUser.area, city: demoUser.city, coords: demoUser.coords }));
+        const newDonations = items.map((item, index) => ({ id: `demo-${Date.now()}-${index}`, restaurantId: state.user.id, restaurantName: state.user.restaurantName, food: item.food, people: item.people, madeAt: item.madeAt.toISOString(), notes: item.notes, status: 'open', volunteerId: null, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), area: state.user.area, city: state.user.city, coords: state.user.coords, distanceKm: 0 }));
         localStorage.setItem('paatrasetu_demo_donations', JSON.stringify([...newDonations, ...donations]));
         dialogRoot.innerHTML = ''; await refresh(); notify('Offer shared in presentation mode. Volunteers can be connected when the server is available.');
         return;
@@ -384,6 +427,10 @@
 
   async function acceptDonation(id) {
     try {
+      if (state.demoMode) {
+        updateDemoDonation(id, { status: 'accepted', volunteerId: state.user.id, volunteerName: state.user.name });
+        await refresh(); notify('Pickup accepted. The donor has been updated.'); return;
+      }
       await request(`/api/donations/${encodeURIComponent(id)}/accept`, { method: 'POST', body: {} });
       await refresh(); notify('Pickup accepted. The restaurant has been updated.');
     } catch (e) { notify(e.message); await refresh(); }
@@ -391,9 +438,18 @@
 
   async function completeDonation(id) {
     try {
+      if (state.demoMode) {
+        updateDemoDonation(id, { status: 'completed', updatedAt: new Date().toISOString() });
+        await refresh(); notify('Pickup marked complete. Thank you for lending a hand.'); return;
+      }
       await request(`/api/donations/${encodeURIComponent(id)}/complete`, { method: 'POST', body: {} });
       await refresh(); notify('Pickup marked complete. Thank you for lending a hand.');
     } catch (e) { notify(e.message); await refresh(); }
+  }
+
+  function updateDemoDonation(id, changes) {
+    const donations = JSON.parse(localStorage.getItem('paatrasetu_demo_donations') || '[]');
+    localStorage.setItem('paatrasetu_demo_donations', JSON.stringify(donations.map(d => d.id === id ? { ...d, ...changes, updatedAt: new Date().toISOString() } : d)));
   }
 
   async function signOut() {
@@ -401,6 +457,7 @@
     state.user = null;
     state.donations = [];
     state.demoMode = false;
+    localStorage.removeItem('paatrasetu_demo_session');
     eventSource?.close(); eventSource = null; eventUserId = null;
     route = 'home'; dialogRoot.innerHTML = ''; render();
     try {
@@ -473,6 +530,12 @@
     }
     if (event.target.id === 'radius-select' && state.user?.role === 'volunteer') {
       try {
+        if (state.demoMode) {
+          state.user.radiusKm = Number(event.target.value);
+          localStorage.setItem('paatrasetu_demo_session', JSON.stringify(state.user));
+          render();
+          return;
+        }
         await request('/api/me/radius', { method: 'PUT', body: { radiusKm: Number(event.target.value) } });
         await refresh();
       } catch (e) { notify(e.message); }
@@ -483,6 +546,13 @@
   window.addEventListener('pageshow', () => { void refresh().catch(() => {}); });
 
   main.innerHTML = `<div class="loading-state"><span class="loading-ornament">✳</span><p>Opening your neighbourhood table…</p></div>`;
+  if (staticDemoHost) {
+    state.demoMode = true;
+    const savedSession = JSON.parse(localStorage.getItem('paatrasetu_demo_session') || 'null');
+    if (savedSession) {
+      state.user = savedSession;
+    }
+  }
   refresh().catch(error => {
     state.user = null; state.donations = []; render();
     notify(error.message);
