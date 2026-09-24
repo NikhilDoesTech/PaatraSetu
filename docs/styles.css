@@ -64,6 +64,7 @@ h1, h2, h3, p { margin-top: 0; }
 h1, h2, h3 { font-family: Manrope, 'DM Sans', sans-serif; }
 .hero h1 { max-width: 580px; margin: 0 0 20px; color: #213a2b; font-size: clamp(49px, 5.2vw, 70px); line-height: 1.055; font-weight: 700; letter-spacing: -4.8px; }
 .hero h1 em { color: var(--green); font-style: normal; }
+.hero-quote-accent { color: #805e2a; }
 .hero-lede { max-width: 440px; margin-bottom: 30px; color: var(--muted); font-size: 15px; line-height: 1.8; }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
 .button-arrow { display: inline-block; font-size: 19px; font-weight: 400; line-height: 12px; }
@@ -115,6 +116,11 @@ h1, h2, h3 { font-family: Manrope, 'DM Sans', sans-serif; }
 .why-point { display: flex; align-items: flex-start; gap: 10px; color: #36453a; font-size: 12px; line-height: 1.5; }
 .check { flex: none; width: 18px; height: 18px; display: grid; place-items: center; border-radius: 50%; background: #d7e9a5; color: #335433; font-size: 11px; font-weight: 700; }
 .join-strip { padding: 40px 0 64px; display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+.role-choice-group { display: flex; align-items: end; gap: 15px; }
+.role-choice-donors { display: grid; gap: 7px; }
+.role-choice-label { color: #805e2a; font-size: 10px; font-weight: 700; letter-spacing: .7px; text-transform: uppercase; }
+.button-volunteer { background: var(--green); color: #fffefa; box-shadow: 0 8px 18px rgba(33,79,60,.18); }
+.button-volunteer:hover { background: var(--green-dark); }
 .join-strip h2 { margin: 0 0 6px; color: #213a2b; font-size: 24px; letter-spacing: -.8px; }
 .join-strip p { margin: 0; color: var(--muted); font-size: 12px; }
 .site-footer { min-height: 86px; display: flex; align-items: center; justify-content: space-between; gap: 15px; padding: 18px clamp(20px, 6.2vw, 96px); border-top: 1px solid var(--line); color: #788278; font-size: 11px; }
@@ -137,7 +143,10 @@ h1, h2, h3 { font-family: Manrope, 'DM Sans', sans-serif; }
 .form-topline button { padding: 0; border: 0; background: transparent; color: var(--green); font-size: 11px; font-weight: 700; cursor: pointer; }
 .form-panel h2 { margin: 0 0 7px; color: #213a2b; font-size: 27px; letter-spacing: -1.1px; }
 .form-subtitle { margin: 0 0 22px; color: var(--muted); font-size: 12px; line-height: 1.6; }
-.role-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 4px; margin-bottom: 18px; border: 1px solid var(--line); border-radius: 12px; background: #f0f1eb; }
+.role-switch { display: grid; grid-template-columns: 1.5fr 1fr; gap: 5px; padding: 4px; margin-bottom: 18px; border: 1px solid var(--line); border-radius: 12px; background: #f0f1eb; }
+.role-switch-donors { display: grid; grid-template-columns: auto 1fr 1fr; align-items: center; gap: 4px; padding: 3px; border-radius: 9px; background: rgba(255,255,255,.45); }
+.role-switch-donors > span { padding: 0 7px; color: #805e2a; font-size: 10px; font-weight: 700; }
+.role-switch .role-volunteer { background: var(--green); color: #fffefa; box-shadow: 0 2px 7px rgba(30,50,35,.12); }
 .role-switch button { min-height: 37px; border: 0; border-radius: 9px; background: transparent; color: #657068; font-size: 11px; font-weight: 700; cursor: pointer; }
 .role-switch button[aria-pressed="true"] { background: var(--white); color: var(--green); box-shadow: 0 2px 7px rgba(30,50,35,.07); }
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 14px; row-gap: 13px; }
@@ -280,6 +289,8 @@ h1, h2, h3 { font-family: Manrope, 'DM Sans', sans-serif; }
   .why-copy h2 { font-size: 32px; }
   .why-aside { padding: 20px; }
   .join-strip { align-items: start; flex-direction: column; padding: 12px 0 47px; }
+  .role-choice-group { width: 100%; align-items: stretch; flex-direction: column; }
+  .role-choice-group .button-volunteer { width: 100%; }
   .site-footer { min-height: 110px; flex-wrap: wrap; padding-inline: 20px; }
   .site-footer > span:nth-child(2) { order: 3; flex-basis: 100%; }
   .prototype-note { margin-left: auto; }
