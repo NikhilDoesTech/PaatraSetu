@@ -98,7 +98,26 @@
       : offers + state.donations.filter(d => d.volunteerId === user.id && d.status !== 'open').length;
     const donate = canDonate(user) ? `<button type="button" class="button button-primary button-small header-donate" data-action="open-donate">Donate food <span class="button-arrow">→</span></button>` : '';
     const updates = `<button type="button" class="link-button" aria-label="Pickup updates" data-action="notifications"><span class="updates-label">Updates</span>${updatesCount ? ` <span class="count-pill">${updatesCount}</span>` : ''}</button>`;
-    headerActions.innerHTML = `${updates}${donate}<span class="avatar-chip"><span class="avatar-dot">${esc(initials(user.name))}</span><span>${esc(user.name.split(' ')[0])}</span></span><button type="button" class="link-button signout-link" aria-label="Sign out" data-action="signout"><span class="signout-label">Sign out</span><span class="signout-icon" aria-hidden="true">↪</span></button>`;
+    headerActions.innerHTML = `${updates}${donate}<button type="button" class="avatar-chip" aria-expanded="false" aria-controls="profile-menu" data-action="profile"><span class="avatar-dot">${esc(initials(user.name))}</span><span>${esc(user.name.split(' ')[0])}</span><span class="profile-chevron" aria-hidden="true">⌄</span></button><button type="button" class="link-button signout-link" aria-label="Sign out" data-action="signout"><span class="signout-label">Sign out</span><span class="signout-icon" aria-hidden="true">↪</span></button>`;
+  }
+
+  function showProfileMenu() {
+    const user = state.user;
+    if (!user) return;
+    const existing = $('#profile-menu');
+    if (existing) {
+      existing.remove();
+      return;
+    }
+    const chip = $('[data-action="profile"]');
+    chip?.setAttribute('aria-expanded', 'true');
+    const menu = document.createElement('section');
+    menu.id = 'profile-menu';
+    menu.className = 'profile-menu';
+    menu.setAttribute('role', 'dialog');
+    menu.setAttribute('aria-label', 'Registered user details');
+    menu.innerHTML = `<div class="profile-menu-heading"><span class="profile-menu-kicker">Your PaatraSetu profile</span><button type="button" class="profile-close" aria-label="Close profile" data-action="profile-close">×</button></div><div class="profile-summary"><span class="profile-large-avatar">${esc(initials(user.name))}</span><div><strong>${esc(user.name)}</strong><span>${user.role === 'volunteer' ? 'Volunteer' : esc(user.restaurantName || 'Individual donor')}</span></div></div><dl class="profile-details"><div><dt>Email</dt><dd>${esc(user.email)}</dd></div><div><dt>Phone</dt><dd>${esc(user.phone)}</dd></div><div><dt>Area</dt><dd>${esc(user.area)}${user.city ? `, ${esc(user.city)}` : ''}</dd></div>${user.role === 'volunteer' ? `<div><dt>Pickup radius</dt><dd>${numberOf(user.radiusKm)} km</dd></div>` : ''}</dl>`;
+    headerActions.appendChild(menu);
   }
 
   function openUpdates(userId) {
@@ -265,9 +284,9 @@
     const user = state.user;
     if (!canDonate(user)) { go('signin'); return; }
     const now = localDateTimeValue(new Date());
-    dialogRoot.innerHTML = `<div class="modal-backdrop" data-action="close-modal"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="donate-title"><button class="modal-close" type="button" data-action="close-modal" aria-label="Close">×</button><p class="eyebrow">A little extra can go a long way</p><h2 id="donate-title">Add a food offer</h2><p class="modal-intro">Tell a nearby volunteer exactly what is ready and how long it is safe to collect.</p>
-    <form id="donate-form" novalidate><div class="form-grid"><div class="field field-full"><label for="food-name">What is the food item?</label><input id="food-name" name="food" placeholder="e.g. Vegetable rice and dal" maxlength="90" required /></div><div class="field"><label for="food-people">Approx. people it can feed</label><input id="food-people" name="people" type="number" min="1" max="5000" step="1" placeholder="e.g. 12" required /></div><div class="field"><label for="food-made">When was it made?</label><input id="food-made" name="madeAt" type="datetime-local" value="${now}" required /></div><div class="field field-full"><label for="food-notes">Expiry window / pickup notes <span style="font-weight:400;color:#8a948b">(optional)</span></label><textarea id="food-notes" name="notes" maxlength="240" placeholder="e.g. Best collected within 2 hours; packaging or entrance details"></textarea></div><div class="field field-full"><label>Tagged pickup spot</label><div class="gps-row"><span class="gps-status is-set">⌖ ${esc(user.area)}${user.city ? ` · ${esc(user.city)}` : ''}</span><span class="field-hint">From your restaurant profile.</span></div></div></div><p id="donate-error" class="error-message" role="alert"></p><div class="form-actions"><button class="button button-primary button-wide" type="submit">Share this food offer <span class="button-arrow">→</span></button></div><p class="modal-footnote">The nearest eligible volunteer is identified now. SMS is left as a server-side integration hook; the offer also appears immediately in the volunteer dashboard.</p></form></section></div>`;
-    $('#food-name', dialogRoot).focus();
+    dialogRoot.innerHTML = `<div class="modal-backdrop" data-action="close-modal"><section class="modal modal-wide" role="dialog" aria-modal="true" aria-labelledby="donate-title"><button class="modal-close" type="button" data-action="close-modal" aria-label="Close">×</button><p class="eyebrow">A little extra can go a long way</p><h2 id="donate-title">Add food offers</h2><p class="modal-intro">Add one or more items from this kitchen. Each item will be visible to nearby volunteers.</p>
+    <form id="donate-form" novalidate><div id="food-items" class="food-items"><div class="food-item" data-item-index="0"><div class="food-item-heading"><strong>Food item 1</strong><button class="link-button remove-food" type="button" data-action="remove-food" aria-label="Remove food item" disabled>Remove</button></div><div class="form-grid"><div class="field field-full"><label>What is the food item?</label><input name="food" placeholder="e.g. Vegetable rice and dal" maxlength="90" required /></div><div class="field"><label>Approx. people it can feed</label><input name="people" type="number" min="1" max="5000" step="1" placeholder="e.g. 12" required /></div><div class="field"><label>When was it made?</label><input name="madeAt" type="datetime-local" value="${now}" required /></div><div class="field field-full"><label>Expiry window / pickup notes <span style="font-weight:400;color:#8a948b">(optional)</span></label><textarea name="notes" maxlength="240" placeholder="e.g. Best collected within 2 hours; packaging or entrance details"></textarea></div></div></div></div><button class="button button-outline add-food-button" type="button" data-action="add-food">+ Add another food item</button><div class="tagged-spot"><label>Tagged pickup spot</label><span class="gps-status is-set">⌖ ${esc(user.area)}${user.city ? ` · ${esc(user.city)}` : ''}</span></div><p id="donate-error" class="error-message" role="alert"></p><div class="form-actions"><button class="button button-primary button-wide" type="submit">Share all food offers <span class="button-arrow">→</span></button></div><p class="modal-footnote">The nearest eligible volunteer is identified for each item. SMS remains a server-side integration hook.</p></form></section></div>`;
+    $('[name="food"]', dialogRoot)?.focus();
   }
 
   function showAlerts() {
@@ -340,24 +359,26 @@
 
   async function submitDonation(form) {
     const error = $('#donate-error');
-    const fields = new FormData(form);
-    const food = String(fields.get('food') || '').trim();
-    const people = Number(fields.get('people'));
-    const madeAt = new Date(fields.get('madeAt'));
-    if (!food || food.length > 90 || !Number.isInteger(people) || people < 1 || people > 5000 || Number.isNaN(madeAt.valueOf())) {
-      error.textContent = 'Add a food description, a serving count from 1 to 5,000, and a valid preparation time.'; return;
+    const items = [...form.querySelectorAll('.food-item')].map(item => {
+      const value = name => item.querySelector(`[name="${name}"]`)?.value || '';
+      return { food: String(value('food')).trim(), people: Number(value('people')), madeAt: new Date(value('madeAt')), notes: String(value('notes')).trim() };
+    });
+    if (!items.length || items.some(item => !item.food || item.food.length > 90 || !Number.isInteger(item.people) || item.people < 1 || item.people > 5000 || Number.isNaN(item.madeAt.valueOf()) || item.notes.length > 240)) {
+      error.textContent = 'Complete every food item with a description, 1 to 5,000 people, and a valid preparation time.'; return;
     }
     try {
       if (state.demoMode) {
-        const donation = { id: `demo-${Date.now()}`, restaurantId: demoUser.id, restaurantName: demoUser.restaurantName, food, people, madeAt: madeAt.toISOString(), notes: String(fields.get('notes') || ''), status: 'open', volunteerId: null, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), area: demoUser.area, city: demoUser.city, coords: demoUser.coords };
         const donations = JSON.parse(localStorage.getItem('paatrasetu_demo_donations') || '[]');
-        localStorage.setItem('paatrasetu_demo_donations', JSON.stringify([donation, ...donations]));
+        const newDonations = items.map((item, index) => ({ id: `demo-${Date.now()}-${index}`, restaurantId: demoUser.id, restaurantName: demoUser.restaurantName, food: item.food, people: item.people, madeAt: item.madeAt.toISOString(), notes: item.notes, status: 'open', volunteerId: null, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), area: demoUser.area, city: demoUser.city, coords: demoUser.coords }));
+        localStorage.setItem('paatrasetu_demo_donations', JSON.stringify([...newDonations, ...donations]));
         dialogRoot.innerHTML = ''; await refresh(); notify('Offer shared in presentation mode. Volunteers can be connected when the server is available.');
         return;
       }
-      const result = await request('/api/donations', { method: 'POST', body: { food, people, madeAt: madeAt.toISOString(), notes: fields.get('notes') } });
+      const results = [];
+      for (const item of items) results.push(await request('/api/donations', { method: 'POST', body: { food: item.food, people: item.people, madeAt: item.madeAt.toISOString(), notes: item.notes } }));
       dialogRoot.innerHTML = ''; await refresh();
-      notify(result.nearestVolunteer ? `Offer shared. ${result.nearestVolunteer.name} is the nearest volunteer and can see it now.` : 'Offer shared. Nearby volunteers can see it now.');
+      const nearest = results.find(result => result.nearestVolunteer)?.nearestVolunteer;
+      notify(`${items.length} food offer${items.length === 1 ? '' : 's'} shared${nearest ? `. ${nearest.name} is the nearest volunteer.` : '.'}`);
     } catch (e) { error.textContent = e.message; }
   }
 
@@ -389,6 +410,9 @@
   }
 
   document.addEventListener('click', event => {
+    if (!event.target.closest('#header-actions') && !event.target.closest('#profile-menu')) {
+      $('#profile-menu')?.remove();
+    }
     const button = event.target.closest('[data-action]');
     if (!button) return;
     const action = button.dataset.action;
@@ -396,6 +420,10 @@
     else if (action === 'home') go('home');
     else if (action === 'set-role') { saveSignupDraft(); role = button.dataset.role; pendingCoords = signupDrafts[role]?.coords || null; render(); }
     else if (action === 'join-role') { saveSignupDraft(); role = button.dataset.role; pendingCoords = signupDrafts[role]?.coords || null; route = 'signup'; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    else if (action === 'profile') showProfileMenu();
+    else if (action === 'profile-close') $('#profile-menu')?.remove();
+    else if (action === 'add-food') addFoodItem();
+    else if (action === 'remove-food') removeFoodItem(button);
     else if (action === 'get-gps') getGPS($('#gps-status'));
     else if (action === 'donate-gate') { if (state.user) showDonateModal(); else go('signin'); }
     else if (action === 'open-donate') showDonateModal();
@@ -405,6 +433,31 @@
     else if (action === 'complete') void completeDonation(button.dataset.id);
     else if (action === 'signout') void signOut();
   });
+
+  function addFoodItem() {
+    const items = $('#food-items');
+    if (!items) return;
+    const index = items.children.length;
+    const now = localDateTimeValue(new Date());
+    const item = document.createElement('div');
+    item.className = 'food-item';
+    item.dataset.itemIndex = index;
+    item.innerHTML = `<div class="food-item-heading"><strong>Food item ${index + 1}</strong><button class="link-button remove-food" type="button" data-action="remove-food" aria-label="Remove food item">Remove</button></div><div class="form-grid"><div class="field field-full"><label>What is the food item?</label><input name="food" placeholder="e.g. Vegetable rice and dal" maxlength="90" required /></div><div class="field"><label>Approx. people it can feed</label><input name="people" type="number" min="1" max="5000" step="1" placeholder="e.g. 12" required /></div><div class="field"><label>When was it made?</label><input name="madeAt" type="datetime-local" value="${now}" required /></div><div class="field field-full"><label>Expiry window / pickup notes <span style="font-weight:400;color:#8a948b">(optional)</span></label><textarea name="notes" maxlength="240" placeholder="e.g. Best collected within 2 hours; packaging or entrance details"></textarea></div></div>`;
+    items.appendChild(item);
+    item.querySelector('[name="food"]')?.focus();
+  }
+
+  function removeFoodItem(button) {
+    const item = button.closest('.food-item');
+    const items = $('#food-items');
+    if (!item || !items || items.children.length <= 1) return;
+    item.remove();
+    [...items.children].forEach((entry, index) => {
+      entry.dataset.itemIndex = index;
+      const heading = $('.food-item-heading strong', entry);
+      if (heading) heading.textContent = `Food item ${index + 1}`;
+    });
+  }
 
   document.addEventListener('submit', event => {
     if (event.target.id === 'signup-form') { event.preventDefault(); void submitSignup(event.target); }
