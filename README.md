@@ -24,6 +24,8 @@ GitHub Pages also includes a browser-only presentation mode. Open the Pages URL,
 community** to create a restaurant, individual, or volunteer account, and then sign in again
 with the same email and password. Accounts and demo food offers are stored only in that browser;
 GPS and restaurant proof upload are optional in this mode. Select the Indian state or union
-territory, enter the town/city and six-digit pincode; the app geocodes that location and uses
-the resulting distance for volunteer radius filtering. The `admin` / `admin` presentation login
+territory, enter the town/city and six-digit pincode; the app uses a GPS tag when available,
+otherwise geocodes the six-digit pincode and uses those coordinates for volunteer radius
+filtering. It never substitutes a city-center or unrelated fallback coordinate when a pincode
+cannot be located. The `admin` / `admin` presentation login
 remains available but is intentionally not displayed in the website UI.
