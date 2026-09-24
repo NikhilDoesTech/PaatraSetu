@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Goodplate's small SQLite-backed web server (Python standard library only)."""
+"""Paatra Setu's small SQLite-backed web server (Python standard library only)."""
 
 from __future__ import annotations
 
@@ -28,9 +28,9 @@ from urllib.parse import unquote, urlparse
 
 
 ROOT = Path(__file__).resolve().parent
-DATA_DIR = Path(os.environ.get("GOODPLATE_DATA_DIR", ROOT / "data")).expanduser().resolve()
+DATA_DIR = Path(os.environ.get("PAATRA_SETU_DATA_DIR", ROOT / "data")).expanduser().resolve()
 UPLOAD_DIR = DATA_DIR / "proofs"
-DB_PATH = DATA_DIR / "goodplate.sqlite3"
+DB_PATH = DATA_DIR / "paatrasetu.sqlite3"
 HOST = os.environ.get("HOST", "127.0.0.1")
 PORT = int(os.environ.get("PORT", "8000"))
 SESSION_DAYS = 30
@@ -179,7 +179,7 @@ def make_session(conn, user_id):
     return token
 
 
-class GoodplateServer(ThreadingHTTPServer):
+class PaatraSetuServer(ThreadingHTTPServer):
     daemon_threads = True
     allow_reuse_address = True
 
@@ -198,7 +198,7 @@ class GoodplateServer(ThreadingHTTPServer):
 
 
 class Handler(BaseHTTPRequestHandler):
-    server_version = "Goodplate/1.0"
+    server_version = "Paatra Setu/1.0"
     protocol_version = "HTTP/1.1"
 
     def log_message(self, fmt, *args):
@@ -272,7 +272,7 @@ class Handler(BaseHTTPRequestHandler):
     def session_token(self):
         try:
             cookies = SimpleCookie(self.headers.get("Cookie", ""))
-            return cookies["goodplate_session"].value if "goodplate_session" in cookies else None
+            return cookies["paatrasetu_session"].value if "paatrasetu_session" in cookies else None
         except Exception:
             return None
 
@@ -289,7 +289,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def cookie_header(self, token, max_age=SESSION_DAYS * 86400):
         secure = self.headers.get("X-Forwarded-Proto", "").lower() == "https" or self.server.server_address[1] == 443
-        return "goodplate_session={}; Path=/; HttpOnly; SameSite=Lax; Max-Age={}{}".format(token, max_age, "; Secure" if secure else "")
+        return "paatrasetu_session={}; Path=/; HttpOnly; SameSite=Lax; Max-Age={}{}".format(token, max_age, "; Secure" if secure else "")
 
     def do_GET(self):
         parsed = urlparse(self.path)
@@ -382,7 +382,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("X-Accel-Buffering", "no")
         self.end_headers()
         try:
-            self.wfile.write(b": Goodplate updates connected\n\n")
+            self.wfile.write(b": Paatra Setu updates connected\n\n")
             self.wfile.flush()
             while True:
                 try:
@@ -494,7 +494,7 @@ class Handler(BaseHTTPRequestHandler):
             user = conn.execute("SELECT * FROM users WHERE email=? COLLATE NOCASE", (email,)).fetchone()
             if user is None:
                 # Keep invalid-email attempts close to the normal password check duration.
-                hash_password(password, b"goodplate-demo-salt")
+                hash_password(password, b"paatrasetu-demo-salt")
                 self.send_json(HTTPStatus.UNAUTHORIZED, {"error": "Email or password is incorrect."})
                 return
             candidate = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), user["password_salt"], PASSWORD_ITERATIONS)
@@ -510,7 +510,7 @@ class Handler(BaseHTTPRequestHandler):
             token_hash = hashlib.sha256(token.encode("ascii", errors="ignore")).hexdigest()
             with db() as conn:
                 conn.execute("DELETE FROM sessions WHERE token_hash=?", (token_hash,))
-        cookie = "goodplate_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0"
+        cookie = "paatrasetu_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0"
         if self.headers.get("X-Forwarded-Proto", "").lower() == "https":
             cookie += "; Secure"
         self.send_json(HTTPStatus.OK, {"ok": True}, [("Set-Cookie", cookie)])
@@ -631,13 +631,13 @@ def main():
     initialize_database()
     with db() as conn:
         conn.execute("DELETE FROM sessions WHERE expires_at<?", (int(time.time()),))
-    SERVER = GoodplateServer((HOST, PORT), Handler)
-    print(f"Goodplate is running at http://{HOST}:{PORT}")
+    SERVER = PaatraSetuServer((HOST, PORT), Handler)
+    print(f"Paatra Setu is running at http://{HOST}:{PORT}")
     print(f"SQLite database: {DB_PATH}")
     try:
         SERVER.serve_forever()
     except KeyboardInterrupt:
-        print("\nGoodplate server stopped.")
+        print("\nPaatra Setu server stopped.")
     finally:
         SERVER.server_close()
 
