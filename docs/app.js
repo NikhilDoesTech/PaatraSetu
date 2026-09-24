@@ -412,12 +412,39 @@
   async function submitSignin(form) {
     const error = $('#signin-error');
     const fields = new FormData(form);
+    const email = String(fields.get('email') || '').trim().toLowerCase();
+    const password = String(fields.get('password') || '');
+    if (staticDemoHost) {
+      if (email === 'admin' && password === 'admin') {
+        state.demoMode = true;
+        state.user = demoUser;
+        localStorage.setItem('paatrasetu_demo_session', JSON.stringify(state.user));
+        route = 'home';
+        await refresh();
+        notify('Welcome to the presentation demo.');
+        return;
+      }
+      const accounts = JSON.parse(localStorage.getItem('paatrasetu_demo_accounts') || '[]');
+      const account = accounts.find(item => item.email.toLowerCase() === email && item.password === password);
+      if (!account) {
+        error.textContent = 'This browser does not have that account yet. Create the account from Join the community on this same Pages website, then sign in with its email and password.';
+        return;
+      }
+      state.demoMode = true;
+      state.user = { ...account };
+      delete state.user.password;
+      localStorage.setItem('paatrasetu_demo_session', JSON.stringify(state.user));
+      route = 'home';
+      await refresh();
+      notify(`Welcome back, ${state.user.name.split(' ')[0]}.`);
+      return;
+    }
     try {
-      await request('/api/login', { method: 'POST', body: { email: fields.get('email'), password: fields.get('password') } });
+      await request('/api/login', { method: 'POST', body: { email, password } });
       state.demoMode = false;
       route = 'home'; await refresh(); notify(`Welcome back, ${state.user.name.split(' ')[0]}.`);
     } catch (e) {
-      if (String(fields.get('email')).trim().toLowerCase() === 'admin' && fields.get('password') === 'admin') {
+      if (email === 'admin' && password === 'admin') {
         state.demoMode = true;
         state.user = demoUser;
         route = 'home';
@@ -426,7 +453,7 @@
         return;
       }
       const accounts = JSON.parse(localStorage.getItem('paatrasetu_demo_accounts') || '[]');
-      const account = accounts.find(item => item.email.toLowerCase() === String(fields.get('email')).trim().toLowerCase() && item.password === fields.get('password'));
+      const account = accounts.find(item => item.email.toLowerCase() === email && item.password === password);
       if (account) {
         state.demoMode = true;
         state.user = { ...account };
