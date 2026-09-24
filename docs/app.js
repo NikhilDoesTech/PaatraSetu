@@ -30,43 +30,6 @@
       else { headers['Content-Type'] = 'application/json'; options.body = JSON.stringify(body); }
     }
 
-    function saveSignupDraft() {
-      const form = $('#signup-form');
-      if (!form) return;
-      const draft = {};
-      form.querySelectorAll('input:not([type="file"]), textarea, select').forEach(field => {
-        draft[field.name] = field.value;
-      });
-      const proof = $('#proof-file', form)?.files?.[0];
-      if (proof) draft.proof = proof;
-      draft.coords = pendingCoords;
-      signupDrafts[role] = draft;
-    }
-
-    function restoreSignupDraft() {
-      const form = $('#signup-form');
-      const draft = signupDrafts[role];
-      if (!form || !draft) return;
-      form.querySelectorAll('input:not([type="file"]), textarea, select').forEach(field => {
-        if (draft[field.name] !== undefined) field.value = draft[field.name];
-      });
-      const proofInput = $('#proof-file', form);
-      if (proofInput && draft.proof && typeof DataTransfer !== 'undefined') {
-        const transfer = new DataTransfer();
-        transfer.items.add(draft.proof);
-        proofInput.files = transfer.files;
-        const label = $('#upload-name', form);
-        if (label) label.textContent = `${draft.proof.name} · ${(draft.proof.size / 1024).toFixed(0)} KB`;
-      }
-      if (draft.coords) {
-        pendingCoords = draft.coords;
-        const status = $('#gps-status', form);
-        if (status) {
-          status.textContent = `Location tagged · ${pendingCoords.lat.toFixed(4)}, ${pendingCoords.lon.toFixed(4)}`;
-          status.classList.add('is-set');
-        }
-      }
-    }
     let response;
     try { response = await fetch(path, options); }
     catch {
@@ -77,6 +40,44 @@
     catch { throw new Error('This page is not connected to the PaatraSetu API. A basic static server or GitHub Pages cannot handle sign-in. Stop that server, run `python3 server.py` from the outputs folder, then open http://localhost:8001.'); }
     if (!response.ok) throw new Error(payload.error || 'PaatraSetu could not complete that action. Please try again.');
     return payload;
+  }
+
+  function saveSignupDraft() {
+    const form = $('#signup-form');
+    if (!form) return;
+    const draft = {};
+    form.querySelectorAll('input:not([type="file"]), textarea, select').forEach(field => {
+      draft[field.name] = field.value;
+    });
+    const proof = $('#proof-file', form)?.files?.[0];
+    if (proof) draft.proof = proof;
+    draft.coords = pendingCoords;
+    signupDrafts[role] = draft;
+  }
+
+  function restoreSignupDraft() {
+    const form = $('#signup-form');
+    const draft = signupDrafts[role];
+    if (!form || !draft) return;
+    form.querySelectorAll('input:not([type="file"]), textarea, select').forEach(field => {
+      if (draft[field.name] !== undefined) field.value = draft[field.name];
+    });
+    const proofInput = $('#proof-file', form);
+    if (proofInput && draft.proof && typeof DataTransfer !== 'undefined') {
+      const transfer = new DataTransfer();
+      transfer.items.add(draft.proof);
+      proofInput.files = transfer.files;
+      const label = $('#upload-name', form);
+      if (label) label.textContent = `${draft.proof.name} · ${(draft.proof.size / 1024).toFixed(0)} KB`;
+    }
+    if (draft.coords) {
+      pendingCoords = draft.coords;
+      const status = $('#gps-status', form);
+      if (status) {
+        status.textContent = `Location tagged · ${pendingCoords.lat.toFixed(4)}, ${pendingCoords.lon.toFixed(4)}`;
+        status.classList.add('is-set');
+      }
+    }
   }
 
   function notify(message) {
