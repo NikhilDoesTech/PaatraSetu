@@ -771,4 +771,49 @@ h1, h2, h3, .brand, .step-number, .hero-seal, .impact-number strong {
   .hero-copy::before { left: auto; right: 3px; top: 2px; }
   .site-footer > span:nth-child(2) { color: #776a57; }
   .hero-visual::before { left: 3%; }
+  .impact-meter {
+    width: 100%;
+    margin-top: 18px;
+    gap: 10px;
+    padding: 11px 13px;
+  }
+  .impact-meter div { min-width: 0; flex-direction: column; gap: 1px; }
+  .impact-meter small { margin-left: auto; max-width: 125px; text-align: right; line-height: 1.35; }
+  .hero { padding-top: 18px; }
+  .hero h1 { font-size: clamp(42px, 12vw, 58px); line-height: 1.02; letter-spacing: -3px; }
+  .hero-lede { line-height: 1.65; }
+  .hero-actions .button { flex: 1 1 100%; width: 100%; }
+  .hero-visual { min-height: 350px; margin-inline: -8px; }
+  .hero-orbit { width: min(92vw, 360px); }
+  .plate { width: min(69vw, 275px); }
+  .floating-note { max-width: 155px; padding: 9px 10px; gap: 7px; }
+  .floating-icon { width: 27px; height: 27px; flex: 0 0 27px; font-size: 13px; }
+  .floating-copy strong { font-size: 10px; }
+  .floating-copy span { font-size: 9px; line-height: 1.25; }
+  .note-one { top: 5%; right: -2px; }
+  .note-two { bottom: 3%; left: -2px; }
+  .hero-seal { right: 0; bottom: 20%; width: 59px; height: 59px; font-size: 7px; }
+  .section-heading h2 { font-size: clamp(30px, 9vw, 36px); line-height: 1.08; }
+  .join-strip { padding: 24px 18px 31px; }
+  .join-strip h2 { font-size: 29px; }
+  .role-choice-donors .hero-actions { flex-direction: column; }
+  .role-choice-donors .button { width: 100%; }
+}
+@media (max-width: 390px) {
+  .site-header { padding-inline: 12px; }
+  .brand { font-size: 17px; gap: 5px; }
+  .brand-mark { width: 28px; height: 28px; }
+  .header-donate { min-height: 35px; padding-inline: 8px; font-size: 9px; }
+  .page-shell { padding-inline: 14px; }
+  .hero h1 { font-size: 43px; }
+  .impact-meter small { display: none; }
+  .hero-visual { min-height: 320px; }
+  .plate { width: min(72vw, 250px); }
+  .floating-note { max-width: 136px; }
+  .note-one { right: -5px; }
+  .note-two { left: -5px; }
+  .hero-seal { display: none; }
+  .why-section { padding: 25px 18px; }
+  .dashboard { padding-inline: 14px; }
+  .modal { width: calc(100vw - 24px); }
 }
