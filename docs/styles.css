@@ -87,17 +87,17 @@ h1, h2, h3 { font-family: Manrope, 'DM Sans', sans-serif; }
 .hero-orbit::after { content: ''; position: absolute; inset: 18%; border: 1px dashed rgba(33,79,60,.11); border-radius: inherit; }
 .plate { width: min(79%, 370px); aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; background: #fffcf3; box-shadow: 0 26px 65px rgba(43, 72, 45, .16), inset 0 0 0 14px #f7f1df, inset 0 0 0 18px #ebe1c9; transform: rotate(-8deg); }
 .plate-inner { width: 70%; height: 70%; position: relative; overflow: hidden; border-radius: 50%; background: #d7e2bd; box-shadow: inset 0 2px 15px rgba(43,72,45,.13); }
-.plate-leaf { position: absolute; display: block; width: 36%; height: 21%; border-radius: 90% 8% 90% 10%; background: #4e8050; transform: rotate(-34deg); }
-.plate-leaf:nth-child(1) { top: 19%; left: 24%; }
-.plate-leaf:nth-child(2) { top: 34%; left: 48%; background: #719258; transform: rotate(31deg) scaleX(-1); }
-.plate-leaf:nth-child(3) { top: 49%; left: 18%; background: #84a564; transform: rotate(16deg); }
-.plate-leaf:nth-child(4) { top: 59%; left: 46%; background: #456e45; transform: rotate(-31deg) scaleX(-1); }
-.plate-tomato { position: absolute; width: 19%; aspect-ratio: 1; border-radius: 50%; background: #dc7951; box-shadow: inset -5px -6px 0 rgba(119,51,37,.11); }
-.plate-tomato::before { content: ''; position: absolute; width: 35%; height: 35%; top: -3px; left: 33%; background: #577742; clip-path: polygon(50% 0,63% 40%,100% 25%,73% 55%,93% 85%,53% 68%,20% 100%,33% 58%,0 37%,40% 42%); }
-.plate-tomato.one { top: 22%; left: 59%; }
-.plate-tomato.two { top: 58%; left: 23%; width: 15%; }
-.plate-carrot { position: absolute; top: 34%; left: 29%; width: 32%; height: 13%; border-radius: 60% 5% 60% 10%; background: #edbd70; transform: rotate(37deg); }
-.plate-bean { position: absolute; right: 21%; bottom: 23%; width: 15%; height: 8%; border-radius: 50%; background: #eee7c5; transform: rotate(-21deg); }
+.dish-bowl { position: absolute; display: block; width: 27%; aspect-ratio: 1.35; border-radius: 50%; background: #b9663e; border: 3px solid #e6bd72; box-shadow: inset 0 -7px 0 rgba(91,48,29,.14); }
+.dish-bowl::after { content: ''; position: absolute; inset: 18%; border-radius: 50%; background: #d98b43; }
+.dal-bowl { top: 16%; left: 17%; }
+.dal-bowl::after { background: #dca64c; }
+.sabzi-bowl { top: 16%; right: 15%; background: #5a7b4a; }
+.sabzi-bowl::after { background: #7e9b50; }
+.dish-roti { position: absolute; top: 41%; left: 31%; width: 38%; height: 22%; border-radius: 50%; background: #d8a35d; border: 3px solid #b8793d; box-shadow: inset 0 0 0 5px rgba(255,226,157,.3); transform: rotate(-10deg); }
+.dish-roti::after { content: ''; position: absolute; inset: 28% 17%; border-top: 2px solid rgba(118,67,32,.35); border-bottom: 2px solid rgba(118,67,32,.35); border-radius: 50%; }
+.dish-samosa { position: absolute; bottom: 19%; left: 16%; width: 22%; height: 22%; background: #d48a3e; border: 3px solid #9d5f2c; clip-path: polygon(50% 0, 100% 86%, 0 86%); transform: rotate(-8deg); }
+.dish-laddoo { position: absolute; right: 18%; bottom: 20%; width: 19%; aspect-ratio: 1; border-radius: 50%; background: #dcae42; border: 3px solid #a97424; box-shadow: inset -5px -5px 0 rgba(130,72,19,.14); }
+.dish-garnish { position: absolute; right: 42%; bottom: 13%; width: 13%; height: 7%; border-radius: 50%; background: #66864d; transform: rotate(-18deg); }
 .floating-note { position: absolute; display: flex; align-items: center; gap: 10px; padding: 12px 15px; border: 1px solid rgba(226,230,220,.8); border-radius: 14px; background: rgba(255,254,250,.94); box-shadow: var(--shadow); }
 .note-one { top: 8%; right: 2%; }
 .note-two { bottom: 10%; left: 1%; }
@@ -742,6 +742,31 @@ h1, h2, h3, .brand, .step-number, .hero-seal, .impact-number strong {
 .auth-aside::before { content: '✾'; }
 .why-aside { position: relative; overflow: hidden; }
 .why-aside::after { content: '✥'; position: absolute; right: 16px; top: 11px; color: rgba(165,122,46,.4); font-size: 16px; pointer-events: none; }
+.section-heading h2,
+.why-copy h2,
+.join-strip h2 { letter-spacing: -.5px; }
+.step-card {
+  border-radius: 4px 18px 4px 18px;
+  box-shadow: inset 0 0 0 1px rgba(165,122,46,.08);
+}
+.step-number span:last-child {
+  color: #a57a2e;
+}
+.join-strip {
+  position: relative;
+  overflow: hidden;
+  border-radius: 4px 24px 4px 24px;
+}
+.join-strip::before,
+.join-strip::after {
+  content: '✥';
+  position: absolute;
+  color: rgba(255,238,194,.34);
+  font-size: 34px;
+  pointer-events: none;
+}
+.join-strip::before { top: 12px; left: 19px; }
+.join-strip::after { right: 22px; bottom: 10px; }
 @media (max-width: 650px) {
   .hero-copy::before { left: auto; right: 3px; top: 2px; }
   .site-footer > span:nth-child(2) { color: #776a57; }
