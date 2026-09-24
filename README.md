@@ -23,5 +23,7 @@ a pickup. SMS delivery is intentionally represented by a server-side notificatio
 GitHub Pages also includes a browser-only presentation mode. Open the Pages URL, use **Join the
 community** to create a restaurant, individual, or volunteer account, and then sign in again
 with the same email and password. Accounts and demo food offers are stored only in that browser;
-GPS and restaurant proof upload are optional in this mode. The `admin` / `admin` presentation
-login remains available but is intentionally not displayed in the website UI.
+GPS and restaurant proof upload are optional in this mode. Select the Indian state or union
+territory, enter the town/city and six-digit pincode; the app geocodes that location and uses
+the resulting distance for volunteer radius filtering. The `admin` / `admin` presentation login
+remains available but is intentionally not displayed in the website UI.

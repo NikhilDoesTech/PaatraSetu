@@ -111,6 +111,10 @@ def initialize_database():
             CREATE INDEX IF NOT EXISTS sessions_expiry ON sessions(expires_at);
             """
         )
+        columns = {row["name"] for row in conn.execute("PRAGMA table_info(users)")}
+        for name, definition in (("state", "TEXT NOT NULL DEFAULT ''"), ("town", "TEXT NOT NULL DEFAULT ''"), ("pincode", "TEXT NOT NULL DEFAULT ''")):
+            if name not in columns:
+                conn.execute(f"ALTER TABLE users ADD COLUMN {name} {definition}")
 
 
 def utc_now():
@@ -143,6 +147,9 @@ def safe_user(row):
         "phone": row["phone"],
         "area": row["area"],
         "city": row["city"],
+        "state": row["state"],
+        "town": row["town"],
+        "pincode": row["pincode"],
         "coords": {"lat": row["latitude"], "lon": row["longitude"]},
         "radiusKm": row["radius_km"],
         "proofName": row["proof_name"],
@@ -394,6 +401,10 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/api/me":
                 self.send_json(HTTPStatus.OK, {"user": safe_user(user)})
                 return
+            if path == "/api/stats":
+                total = conn.execute("SELECT COALESCE(SUM(people), 0) FROM donations").fetchone()[0]
+                self.send_json(HTTPStatus.OK, {"mealsSaved": total})
+                return
             if path == "/api/donations":
                 if user is None:
                     self.send_json(HTTPStatus.UNAUTHORIZED, {"error": "Please sign in first."})
@@ -474,6 +485,9 @@ class Handler(BaseHTTPRequestHandler):
         phone = fields.get("phone", "").strip()
         password = fields.get("password", "")
         area = fields.get("area", "").strip()
+        state = fields.get("state", "").strip()
+        town = fields.get("town", "").strip()
+        pincode = fields.get("pincode", "").strip()
         try:
             latitude = float(fields.get("latitude", ""))
             longitude = float(fields.get("longitude", ""))
@@ -489,6 +503,8 @@ class Handler(BaseHTTPRequestHandler):
             raise ValueError("Please enter a valid mobile number with its country code.")
         if not 8 <= len(password) <= 128:
             raise ValueError("Use a password between 8 and 128 characters.")
+        if not state or len(state) > 80 or not town or len(town) > 100 or not re.fullmatch(r"\d{6}", pincode):
+            raise ValueError("Choose your state, enter your town or city, and provide a valid 6-digit pincode.")
         if not area or len(area) > 220:
             raise ValueError("Please add your area or pickup address.")
         if not (-90 <= latitude <= 90 and -180 <= longitude <= 180):
@@ -505,7 +521,7 @@ class Handler(BaseHTTPRequestHandler):
                 raise OverflowError("Restaurant proof must be 5 MB or smaller.")
 
         user_id = uuid.uuid4().hex
-        city = area.rsplit(",", 1)[-1].strip()[:100]
+        city = town[:100]
         created_at = utc_now()
         salt, password_hash = hash_password(password)
         proof_path = None
@@ -520,10 +536,10 @@ class Handler(BaseHTTPRequestHandler):
             with db() as conn:
                 conn.execute(
                     """INSERT INTO users(id,role,name,restaurant_name,email,phone,password_salt,password_hash,
-                       area,city,latitude,longitude,radius_km,proof_path,proof_name,created_at)
-                       VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                       area,city,state,town,pincode,latitude,longitude,radius_km,proof_path,proof_name,created_at)
+                       VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                     (user_id, role, name, restaurant_name or None, email, phone, salt, password_hash,
-                     area, city, latitude, longitude, 10, proof_path, proof_name, created_at),
+                     area, city, state, town, pincode, latitude, longitude, 10, proof_path, proof_name, created_at),
                 )
                 token = make_session(conn, user_id)
                 user = conn.execute("SELECT * FROM users WHERE id=?", (user_id,)).fetchone()
@@ -658,7 +674,7 @@ class Handler(BaseHTTPRequestHandler):
     def update_radius(self):
         body = self.read_json()
         radius = body.get("radiusKm")
-        if not isinstance(radius, (int, float)) or radius not in (2, 5, 10, 20, 50):
+        if not isinstance(radius, (int, float)) or radius not in (5, 10, 15, 20, 25, 30, 35, 40, 45, 50):
             raise ValueError("Choose a pickup radius from the available options.")
         with db() as conn:
             user = self.current_user(conn)

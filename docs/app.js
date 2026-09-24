@@ -4,8 +4,8 @@
   const headerActions = $('#header-actions');
   const dialogRoot = $('#dialog-root');
   const toast = $('#toast');
-  const state = { user: null, donations: [], demoMode: false };
-  const demoUser = { id: 'demo-admin', role: 'restaurant', name: 'PaatraSetu Admin', restaurantName: 'Demo Restaurant', email: 'admin@paatrasetu.demo', phone: '0000000000', area: 'Bengaluru', city: 'Bengaluru', coords: { lat: 12.9716, lon: 77.5946 }, radiusKm: 50 };
+  const state = { user: null, donations: [], mealsSaved: 0, demoMode: false };
+  const demoUser = { id: 'demo-admin', role: 'restaurant', name: 'PaatraSetu Admin', restaurantName: 'Demo Restaurant', email: 'admin@paatrasetu.demo', phone: '0000000000', area: 'Bengaluru', city: 'Bengaluru', state: 'Karnataka', town: 'Bengaluru', pincode: '560001', coords: { lat: 12.9716, lon: 77.5946 }, radiusKm: 50 };
   let route = 'home';
   let role = 'restaurant';
   let pendingCoords = null;
@@ -16,6 +16,8 @@
   const signupDrafts = {};
   const staticDemoHost = location.hostname.endsWith('github.io') || (['localhost', '127.0.0.1'].includes(location.hostname) && location.port !== '8001');
   const fallbackCoords = { lat: 12.9716, lon: 77.5946 };
+  const indianStates = ['Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Andaman and Nicobar Islands', 'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu', 'Delhi', 'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry'];
+  const knownLocations = { jaipur: { lat: 26.9124, lon: 75.7873 }, achrol: { lat: 27.1332, lon: 75.9566 }, bengaluru: { lat: 12.9716, lon: 77.5946 }, delhi: { lat: 28.6139, lon: 77.209 }, mumbai: { lat: 19.076, lon: 72.8777 }, hyderabad: { lat: 17.385, lon: 78.4867 }, chennai: { lat: 13.0827, lon: 80.2707 }, kolkata: { lat: 22.5726, lon: 88.3639 } };
 
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const initials = name => (name || '?').trim().split(/\s+/).slice(0, 2).map(x => x[0] || '').join('').toUpperCase();
@@ -23,6 +25,27 @@
   const dateString = iso => { const date = new Date(iso); return Number.isNaN(date.valueOf()) ? '' : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date); };
   const localDateTimeValue = date => { const adjusted = new Date(date.getTime() - date.getTimezoneOffset() * 60000); return adjusted.toISOString().slice(0, 16); };
   const canDonate = user => user?.role === 'restaurant';
+  const haversineKm = (a, b) => {
+    if (!a || !b) return null;
+    const radians = Math.PI / 180;
+    const dLat = (b.lat - a.lat) * radians;
+    const dLon = (b.lon - a.lon) * radians;
+    const value = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * radians) * Math.cos(b.lat * radians) * Math.sin(dLon / 2) ** 2;
+    return 6371 * 2 * Math.atan2(Math.sqrt(value), Math.sqrt(Math.max(0, 1 - value)));
+  };
+  async function resolvePincode(pincode, town, stateName) {
+    if (!/^\d{6}$/.test(pincode)) throw new Error('Enter a valid 6-digit Indian pincode.');
+    const known = knownLocations[town.trim().toLowerCase()];
+    if (known) return known;
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&country=India&postalcode=${encodeURIComponent(pincode)}`);
+      const places = await response.json();
+      if (places[0]) return { lat: Number(places[0].lat), lon: Number(places[0].lon) };
+    } catch { /* The server/GPS coordinates remain the fallback when geocoding is unavailable. */ }
+    if (pendingCoords) return pendingCoords;
+    if (staticDemoHost) return fallbackCoords;
+    throw new Error(`We could not locate pincode ${pincode}. Check the pincode or use GPS.`);
+  }
 
   async function request(path, { method = 'GET', body, form = false } = {}) {
     const headers = {};
@@ -118,7 +141,7 @@
     menu.className = 'profile-menu';
     menu.setAttribute('role', 'dialog');
     menu.setAttribute('aria-label', 'Registered user details');
-    menu.innerHTML = `<div class="profile-menu-heading"><span class="profile-menu-kicker">Your PaatraSetu profile</span><button type="button" class="profile-close" aria-label="Close profile" data-action="profile-close">×</button></div><div class="profile-summary"><span class="profile-large-avatar">${esc(initials(user.name))}</span><div><strong>${esc(user.name)}</strong><span>${user.role === 'volunteer' ? 'Volunteer' : esc(user.restaurantName || 'Individual donor')}</span></div></div><dl class="profile-details"><div><dt>Email</dt><dd>${esc(user.email)}</dd></div><div><dt>Phone</dt><dd>${esc(user.phone)}</dd></div><div><dt>Area</dt><dd>${esc(user.area)}${user.city ? `, ${esc(user.city)}` : ''}</dd></div>${user.role === 'volunteer' ? `<div><dt>Pickup radius</dt><dd>${numberOf(user.radiusKm)} km</dd></div>` : ''}</dl>`;
+    menu.innerHTML = `<div class="profile-menu-heading"><span class="profile-menu-kicker">Your PaatraSetu profile</span><button type="button" class="profile-close" aria-label="Close profile" data-action="profile-close">×</button></div><div class="profile-summary"><span class="profile-large-avatar">${esc(initials(user.name))}</span><div><strong>${esc(user.name)}</strong><span>${user.role === 'volunteer' ? 'Volunteer' : esc(user.restaurantName || 'Individual donor')}</span></div></div><dl class="profile-details"><div><dt>Email</dt><dd>${esc(user.email)}</dd></div><div><dt>Phone</dt><dd>${esc(user.phone)}</dd></div><div><dt>Location</dt><dd>${esc(user.town || user.city)}, ${esc(user.state || '')} ${esc(user.pincode || '')}</dd></div>${user.role === 'volunteer' ? `<div><dt>Pickup radius</dt><dd>${numberOf(user.radiusKm)} km</dd></div>` : ''}</dl>`;
     headerActions.appendChild(menu);
   }
 
@@ -134,6 +157,10 @@
   async function refresh() {
     if (state.demoMode) {
       state.donations = JSON.parse(localStorage.getItem('paatrasetu_demo_donations') || '[]');
+      state.mealsSaved = state.donations.reduce((sum, donation) => sum + Number(donation.people || 0), 0);
+      if (state.user?.role === 'volunteer') {
+        state.donations = state.donations.map(d => ({ ...d, distanceKm: haversineKm(state.user.coords, d.coords) }));
+      }
       render();
       return;
     }
@@ -142,6 +169,7 @@
       const previousId = state.user?.id || null;
       const result = await request('/api/me');
       state.user = result.user;
+        state.mealsSaved = (await request('/api/stats')).mealsSaved;
       state.donations = state.user ? (await request('/api/donations')).donations : [];
       if (state.user) openUpdates(state.user.id);
       else {
@@ -156,6 +184,7 @@
 
   function guestPage() {
     return `<div class="page-shell" id="home">
+      <section class="impact-meter" aria-label="PaatraSetu impact"><span class="impact-meter-icon" aria-hidden="true">✦</span><div><strong>${numberOf(state.mealsSaved)}</strong><span>meals saved and shared</span></div><small>Every meal you add grows this community counter.</small></section>
       <section class="hero" aria-labelledby="hero-title">
         <div class="hero-copy">
           <p class="eyebrow">Good food. Shared locally.</p>
@@ -202,7 +231,10 @@
         <div class="field"><label for="signup-email">Email address</label><input id="signup-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required /></div>
         <div class="field"><label for="signup-phone">Mobile number</label><input id="signup-phone" name="phone" type="tel" autocomplete="tel" placeholder="Include country code" required /><span class="field-hint">Used for pickup coordination.</span></div>
         <div class="field"><label for="signup-password">Create a password</label><input id="signup-password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128" placeholder="At least 8 characters" required /></div>
-        <div class="field"><label for="signup-area">${role === 'restaurant' ? 'Restaurant area / address' : 'Your area / address'}</label><input id="signup-area" name="area" autocomplete="street-address" placeholder="Street, neighbourhood, city" required /></div>
+        <div class="field"><label for="signup-state">State / union territory</label><select id="signup-state" name="state" required><option value="">Select your state</option>${indianStates.map(stateName => `<option value="${esc(stateName)}">${esc(stateName)}</option>`).join('')}</select></div>
+        <div class="field"><label for="signup-town">Town / city</label><input id="signup-town" name="town" autocomplete="address-level2" placeholder="e.g. Jaipur or Achrol" required /></div>
+        <div class="field"><label for="signup-pincode">Pincode</label><input id="signup-pincode" name="pincode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="6-digit pincode" required /></div>
+        <div class="field"><label for="signup-area">${role === 'restaurant' ? 'Street / pickup address' : 'Street / area'}</label><input id="signup-area" name="area" autocomplete="street-address" placeholder="Street, neighbourhood, city" required /></div>
         <div class="field field-full"><label>Tag your pickup area</label><div class="gps-row"><button class="button button-outline button-small" type="button" data-action="get-gps">⌖ Use my GPS location</button><span id="gps-status" class="gps-status">Location is needed to find nearby matches.</span></div><span class="field-hint">Your browser will ask permission. GPS coordinates are used for nearby matching.</span></div>
         ${role === 'restaurant' ? `<div class="field field-full"><label for="proof-file">Restaurant proof <span style="font-weight:400;color:#8a948b">(optional)</span></label><div class="upload-box"><span aria-hidden="true">▧</span><label for="proof-file">Choose a file</label><input id="proof-file" name="proof" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" /><span id="upload-name" class="upload-name">Business licence, registration, or storefront photo</span></div><span class="field-hint">PDF, JPG, PNG, or WebP · up to 5 MB. Optional for this demo. If uploaded, the file is stored on the PaatraSetu server for review.</span></div>` : ''}
       </div><p id="signup-error" class="error-message" role="alert"></p><p class="form-notice"><span>●</span>${role === 'restaurant' ? 'Your pickup pin is shared with nearby volunteers when you post an offer.' : 'Your location is used to find nearby offers. Your exact pin stays private to you.'}</p><div class="form-actions"><button class="button button-primary button-wide" type="submit">Create ${role === 'restaurant' ? 'restaurant' : 'volunteer'} account <span class="button-arrow">→</span></button></div></form></section></div>`;
@@ -243,7 +275,7 @@
   function volunteerDashboard(user) {
     const nearby = nearbyForVolunteer(user);
     const accepted = state.donations.filter(d => d.volunteerId === user.id && d.status !== 'open').sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-    const radiusOptions = [2, 5, 10, 20, 50].map(n => `<option value="${n}" ${Number(user.radiusKm) === n ? 'selected' : ''}>${n} km</option>`).join('');
+    const radiusOptions = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50].map(n => `<option value="${n}" ${Number(user.radiusKm) === n ? 'selected' : ''}>${n} km</option>`).join('');
     return `<div class="dashboard" id="home"><div class="welcome-line"><div><p class="eyebrow">Your community, nearby</p><h1>Hi, ${esc(user.name.split(' ')[0])}. Ready to lend a hand?</h1></div><span class="status-label open">Available for pickups</span></div>
       <section class="volunteer-top"><p class="eyebrow">A good match starts close by</p><h2>Food offers around you.</h2><p>Accept a pickup to let the restaurant know you’re on your way. Distance is estimated from the location each person shared.</p></section>
       <section class="content-section"><div class="content-heading with-controls"><div><h2>Available pickups <span class="count-pill">${nearby.length}</span></h2><p>Fresh offers within your pickup radius.</p></div><label class="radius-control" for="radius-select">Show me within <select id="radius-select" aria-label="Pickup radius">${radiusOptions}</select></label></div>${nearby.length ? `<div class="listing-list">${nearby.map(d => donationCard(d, user, true)).join('')}</div>` : `<div class="empty-state"><span class="empty-icon">⌖</span><h3>No offers within ${Number(user.radiusKm) || 10} km right now.</h3><p>When a local restaurant posts food, it will appear here. Widen your pickup radius or check back soon.</p></div>`}</section>
@@ -312,14 +344,18 @@
     const email = String(fields.get('email') || '').trim();
     const password = String(fields.get('password') || '');
     const area = String(fields.get('area') || '').trim();
+    const stateName = String(fields.get('state') || '').trim();
+    const town = String(fields.get('town') || '').trim();
+    const pincode = String(fields.get('pincode') || '').trim();
     const phone = String(fields.get('phone') || '').trim();
     const restaurantName = String(fields.get('restaurantName') || '').trim();
     const proof = fields.get('proof');
     if (!name || (role === 'restaurant' && !restaurantName) || !email || !/^\S+@\S+\.\S+$/.test(email) || password.length < 8 || !phone || !area) {
       error.textContent = 'Please complete the required fields, use a valid email, and choose a password of at least 8 characters.'; return;
     }
-    if (!pendingCoords && !staticDemoHost) { error.textContent = 'Tag your GPS location before creating your account.'; return; }
-    pendingCoords ||= fallbackCoords;
+    if (!stateName || !town || !/^\d{6}$/.test(pincode)) { error.textContent = 'Choose your state, enter your town or city, and provide a valid 6-digit pincode.'; return; }
+    try { pendingCoords = await resolvePincode(pincode, town, stateName); } catch (e) { error.textContent = e.message; return; }
+    fields.set('state', stateName);
     if (role === 'restaurant' && proof && proof.name && proof.size > 0) {
       const allowed = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
       if (!allowed.includes(proof.type)) {
@@ -349,7 +385,10 @@
         email,
         phone,
         area,
-        city: area.split(',').pop().trim(),
+        city: town,
+        state: stateName,
+        town,
+        pincode,
         coords: pendingCoords,
         radiusKm: 10,
         password

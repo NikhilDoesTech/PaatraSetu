@@ -70,6 +70,12 @@ h1, h2, h3 { font-family: Manrope, 'DM Sans', sans-serif; }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
 .button-arrow { display: inline-block; font-size: 19px; font-weight: 400; line-height: 12px; }
 .hero-note { margin: 22px 0 0; color: #828d84; font-size: 11px; }
+.impact-meter { display: flex; align-items: center; gap: 15px; width: fit-content; margin: 24px 0 8px; padding: 12px 17px; border: 1px solid var(--line); border-radius: 14px; background: var(--white); box-shadow: var(--shadow); }
+.impact-meter-icon { color: #a57a2e; font-size: 20px; }
+.impact-meter div { display: flex; align-items: baseline; gap: 8px; }
+.impact-meter strong { color: var(--green); font-family: 'Noto Serif', Georgia, serif; font-size: 25px; }
+.impact-meter div span, .impact-meter small { color: var(--muted); font-size: 10px; }
+.impact-meter small { margin-left: 8px; }
 .hero-visual { min-height: 490px; display: grid; place-items: center; position: relative; isolation: isolate; }
 .hero-orbit { position: absolute; z-index: -1; width: min(100%, 505px); aspect-ratio: 1; border-radius: 50%; background: #e9eddc; }
 .hero-orbit::before { content: ''; position: absolute; inset: 8%; border: 1px solid rgba(33,79,60,.10); border-radius: inherit; }
