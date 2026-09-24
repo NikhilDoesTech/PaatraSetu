@@ -199,14 +199,14 @@
           <p class="hero-note">A neighbourhood at a time. A meal at a time.</p>
         </div>
         <div class="hero-visual" aria-hidden="true">
-          <div class="hero-orbit"></div><div class="plate"><div class="plate-inner"><i class="plate-leaf"></i><i class="plate-leaf"></i><i class="plate-leaf"></i><i class="plate-leaf"></i><i class="plate-tomato one"></i><i class="plate-tomato two"></i><i class="plate-carrot"></i><i class="plate-bean"></i></div></div>
+          <div class="hero-orbit"></div><div class="plate" aria-label="A traditional Indian thali"><div class="plate-inner"><i class="dish-bowl dal-bowl"></i><i class="dish-bowl sabzi-bowl"></i><i class="dish-roti"></i><i class="dish-samosa"></i><i class="dish-laddoo"></i><i class="dish-garnish"></i></div></div>
           <span class="spark">✳</span><div class="floating-note note-one"><span class="floating-icon">⌖</span><span class="floating-copy"><strong>Closer, kinder pickups</strong><span>Matched around your neighbourhood</span></span></div>
-          <div class="floating-note note-two"><span class="floating-icon orange">♡</span><span class="floating-copy"><strong>Good food, shared well</strong><span>Quick handoffs. Less food wasted.</span></span></div>
-          <div class="hero-seal">MADE FOR<br>NEIGHBOURS<br><span>✳</span></div>
+          <div class="floating-note note-two"><span class="floating-icon orange">♡</span><span class="floating-copy"><strong>Dal, roti, and sabzi</strong><span>Traditional meals, shared with care.</span></span></div>
+          <div class="hero-seal">MADE FOR<br>NEIGHBOURS<br><span>✥</span></div>
         </div>
       </section>
       <section class="how-section" id="how-it-works" aria-labelledby="how-title">
-        <div class="section-heading"><div><p class="eyebrow">Simple by design</p><h2 id="how-title">Three small steps.<br>A better kind of handoff.</h2></div><p>Sharing should feel easy, whether you’re in the kitchen, on the road, or lending a hand nearby.</p></div>
+        <div class="section-heading"><div><p class="eyebrow">Seva, made simple</p><h2 id="how-title">Three small steps.<br>A better kind of handoff.</h2></div><p>Sharing should feel easy, whether you’re in the kitchen, on the road, or lending a hand nearby.</p></div>
         <div class="steps-grid">
           <article class="step-card"><div class="step-number"><span>01</span><span>⌖</span></div><h3>Share where you are</h3><p>Restaurants add a quick profile and tag their pickup spot using their phone’s location.</p></article>
           <article class="step-card"><div class="step-number"><span>02</span><span>↗</span></div><h3>Post what’s available</h3><p>Describe the food, how many people it can serve, and when it was prepared.</p></article>
@@ -214,7 +214,7 @@
         </div>
       </section>
       <section class="why-section" id="our-why" aria-labelledby="why-title">
-        <div class="why-copy"><p class="eyebrow">Our why</p><h2>Good food still has somewhere to go.</h2><p>Every day, kitchens make a little more than they need. PaatraSetu makes the next step clearer: a local connection, a quick message, and a pickup that works for everyone.</p></div>
+        <div class="why-copy"><p class="eyebrow">Our why</p><h2>Good food still has somewhere to go.</h2><p>From a warm dal to a festive thali, every extra portion carries the care of the kitchen that made it. PaatraSetu makes the next step clearer: a local connection, a quick message, and a pickup that works for everyone.</p></div>
         <div class="why-aside"><p class="why-aside-label">Built around real life</p><div class="why-points"><div class="why-point"><span class="check">✓</span><span>Quick to use on a phone, even on a slower connection.</span></div><div class="why-point"><span class="check">✓</span><span>Pickup details stay clear, from the food to its location.</span></div><div class="why-point"><span class="check">✓</span><span>Restaurants and volunteers each get a view that fits their role.</span></div></div></div>
       </section>
       <section class="join-strip"><div><h2>Make a little extra mean a lot.</h2><p>Choose how you would like to contribute to your neighbourhood.</p></div><div class="role-choice-group"><div class="role-choice-donors"><span class="role-choice-label">Donate food</span><div class="hero-actions"><button class="button button-outline" type="button" data-action="join-role" data-role="restaurant">Restaurant</button><button class="button button-outline" type="button" data-action="join-role" data-role="individual">Individual</button></div></div><button class="button button-volunteer" type="button" data-action="join-role" data-role="volunteer">Volunteer for pickups <span class="button-arrow">→</span></button></div></section>
