@@ -13,6 +13,7 @@
   let eventSource = null;
   let eventUserId = null;
   let refreshInProgress = null;
+  const signupDrafts = {};
 
   const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const initials = name => (name || '?').trim().split(/\s+/).slice(0, 2).map(x => x[0] || '').join('').toUpperCase();
@@ -27,6 +28,44 @@
     if (body !== undefined) {
       if (form) options.body = body;
       else { headers['Content-Type'] = 'application/json'; options.body = JSON.stringify(body); }
+    }
+
+    function saveSignupDraft() {
+      const form = $('#signup-form');
+      if (!form) return;
+      const draft = {};
+      form.querySelectorAll('input:not([type="file"]), textarea, select').forEach(field => {
+        draft[field.name] = field.value;
+      });
+      const proof = $('#proof-file', form)?.files?.[0];
+      if (proof) draft.proof = proof;
+      draft.coords = pendingCoords;
+      signupDrafts[role] = draft;
+    }
+
+    function restoreSignupDraft() {
+      const form = $('#signup-form');
+      const draft = signupDrafts[role];
+      if (!form || !draft) return;
+      form.querySelectorAll('input:not([type="file"]), textarea, select').forEach(field => {
+        if (draft[field.name] !== undefined) field.value = draft[field.name];
+      });
+      const proofInput = $('#proof-file', form);
+      if (proofInput && draft.proof && typeof DataTransfer !== 'undefined') {
+        const transfer = new DataTransfer();
+        transfer.items.add(draft.proof);
+        proofInput.files = transfer.files;
+        const label = $('#upload-name', form);
+        if (label) label.textContent = `${draft.proof.name} · ${(draft.proof.size / 1024).toFixed(0)} KB`;
+      }
+      if (draft.coords) {
+        pendingCoords = draft.coords;
+        const status = $('#gps-status', form);
+        if (status) {
+          status.textContent = `Location tagged · ${pendingCoords.lat.toFixed(4)}, ${pendingCoords.lon.toFixed(4)}`;
+          status.classList.add('is-set');
+        }
+      }
     }
     let response;
     try { response = await fetch(path, options); }
@@ -133,7 +172,7 @@
 
   function authPage(kind) {
     const isLogin = kind === 'signin';
-    if (isLogin) return `<div class="auth-layout">${aside(kind)}<section class="form-panel"><div class="form-topline"><span>Sign in to PaatraSetu</span><button type="button" data-action="signup">Create an account →</button></div><h2>Pick up where you left off.</h2><p class="form-subtitle">Sign in with your account, or use the presentation account below.</p><form id="signin-form" novalidate><div class="form-grid"><div class="field field-full"><label for="login-email">Username or email address</label><input id="login-email" name="email" type="text" autocomplete="username" placeholder="you@example.com or admin" required /></div><div class="field field-full"><label for="login-password">Password</label><input id="login-password" name="password" type="password" autocomplete="current-password" placeholder="Your password" required /></div></div><p class="field-hint">Presentation login: username <strong>admin</strong>, password <strong>admin</strong>.</p><p id="signin-error" class="error-message" role="alert"></p><div class="form-actions"><button class="button button-primary button-wide" type="submit">Sign in <span class="button-arrow">→</span></button></div><p class="form-notice"><span>●</span>Production deployments should replace the demo login with a real server identity provider.</p></form></section></div>`;
+    if (isLogin) return `<div class="auth-layout">${aside(kind)}<section class="form-panel"><div class="form-topline"><span>Sign in to PaatraSetu</span><button type="button" data-action="signup">Create an account →</button></div><h2>Pick up where you left off.</h2><p class="form-subtitle">Sign in with your account to see food offers, nearby pickups, and community updates.</p><form id="signin-form" novalidate><div class="form-grid"><div class="field field-full"><label for="login-email">Username or email address</label><input id="login-email" name="email" type="text" autocomplete="username" placeholder="Username or email address" required /></div><div class="field field-full"><label for="login-password">Password</label><input id="login-password" name="password" type="password" autocomplete="current-password" placeholder="Your password" required /></div></div><p id="signin-error" class="error-message" role="alert"></p><div class="form-actions"><button class="button button-primary button-wide" type="submit">Sign in <span class="button-arrow">→</span></button></div><p class="form-notice"><span>●</span>Your account details are handled securely by the PaatraSetu sign-in service.</p></form></section></div>`;
     return `<div class="auth-layout">${aside(kind)}<section class="form-panel"><div class="form-topline"><span>Join the PaatraSetu community</span><button type="button" data-action="signin">Already joined? Sign in</button></div><h2>Join your local food rescue.</h2><p class="form-subtitle">Choose how you’d like to help. Your location lets us find nearby matches.</p><div class="role-switch" role="group" aria-label="Choose account type"><div class="role-switch-donors"><span>Donate food</span><button type="button" data-action="set-role" data-role="restaurant" aria-pressed="${role === 'restaurant'}">Restaurant</button><button type="button" data-action="set-role" data-role="individual" aria-pressed="${role === 'individual'}">Individual</button></div><button class="role-volunteer" type="button" data-action="set-role" data-role="volunteer" aria-pressed="${role === 'volunteer'}">Volunteer</button></div>
       <form id="signup-form" novalidate><div class="form-grid">
         <div class="field ${role === 'restaurant' ? '' : 'field-full'}"><label for="signup-name">${role === 'restaurant' ? 'Owner / contact name' : 'Your name'}</label><input id="signup-name" name="name" autocomplete="name" placeholder="Full name" required /></div>
@@ -192,10 +231,12 @@
   }
 
   function render() {
+    saveSignupDraft();
     setHeader(state.user);
     if (state.user?.role === 'restaurant') main.innerHTML = restaurantDashboard(state.user);
     else if (state.user?.role === 'volunteer') main.innerHTML = volunteerDashboard(state.user);
     else main.innerHTML = route === 'signin' ? authPage('signin') : route === 'signup' ? authPage('signup') : guestPage();
+    if (route === 'signup' && !state.user) restoreSignupDraft();
   }
 
   function go(nextRoute) {
@@ -268,6 +309,7 @@
       }
     }
     fields.set('role', role === 'individual' ? 'restaurant' : role);
+    if (role === 'individual' && !fields.get('restaurantName')) fields.set('restaurantName', `${name}'s kitchen`);
     fields.set('latitude', String(pendingCoords.lat));
     fields.set('longitude', String(pendingCoords.lon));
     try {
@@ -351,8 +393,8 @@
     const action = button.dataset.action;
     if (action === 'signup' || action === 'signin') go(action);
     else if (action === 'home') go('home');
-    else if (action === 'set-role') { role = button.dataset.role; pendingCoords = null; render(); }
-    else if (action === 'join-role') { role = button.dataset.role; pendingCoords = null; route = 'signup'; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    else if (action === 'set-role') { saveSignupDraft(); role = button.dataset.role; pendingCoords = signupDrafts[role]?.coords || null; render(); }
+    else if (action === 'join-role') { saveSignupDraft(); role = button.dataset.role; pendingCoords = signupDrafts[role]?.coords || null; route = 'signup'; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
     else if (action === 'get-gps') getGPS($('#gps-status'));
     else if (action === 'donate-gate') { if (state.user) showDonateModal(); else go('signin'); }
     else if (action === 'open-donate') showDonateModal();
