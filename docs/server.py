@@ -444,11 +444,11 @@ class Handler(BaseHTTPRequestHandler):
             raise ValueError("The GPS location is not valid. Please tag it again.")
 
         proof = fields.get("proof") if role == "restaurant" else None
-        if role == "restaurant":
-            if not proof or not proof["filename"] or not proof["content"]:
-                raise ValueError("Please choose a restaurant proof document or photo.")
+        if role == "restaurant" and proof:
+            if not proof.get("filename") or not proof.get("content"):
+                raise ValueError("The uploaded restaurant proof is empty. Please choose a valid file or leave it blank.")
             allowed_types = {"application/pdf", "image/jpeg", "image/png", "image/webp"}
-            if proof["content_type"] not in allowed_types:
+            if proof.get("content_type") not in allowed_types:
                 raise ValueError("Choose a PDF, JPG, PNG, or WebP restaurant proof file.")
             if len(proof["content"]) > 5 * 1024 * 1024:
                 raise OverflowError("Restaurant proof must be 5 MB or smaller.")

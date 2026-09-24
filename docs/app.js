@@ -137,7 +137,7 @@
         <div class="field"><label for="signup-password">Create a password</label><input id="signup-password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128" placeholder="At least 8 characters" required /></div>
         <div class="field"><label for="signup-area">${role === 'restaurant' ? 'Restaurant area / address' : 'Your area / address'}</label><input id="signup-area" name="area" autocomplete="street-address" placeholder="Street, neighbourhood, city" required /></div>
         <div class="field field-full"><label>Tag your pickup area</label><div class="gps-row"><button class="button button-outline button-small" type="button" data-action="get-gps">⌖ Use my GPS location</button><span id="gps-status" class="gps-status">Location is needed to find nearby matches.</span></div><span class="field-hint">Your browser will ask permission. GPS coordinates are used for nearby matching.</span></div>
-        ${role === 'restaurant' ? `<div class="field field-full"><label for="proof-file">Restaurant proof</label><div class="upload-box"><span aria-hidden="true">▧</span><label for="proof-file">Choose a file</label><input id="proof-file" name="proof" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required /><span id="upload-name" class="upload-name">Business licence, registration, or storefront photo</span></div><span class="field-hint">PDF, JPG, PNG, or WebP · up to 5 MB. The file is stored on the PaatraSetu server for review.</span></div>` : ''}
+        ${role === 'restaurant' ? `<div class="field field-full"><label for="proof-file">Restaurant proof <span style="font-weight:400;color:#8a948b">(optional)</span></label><div class="upload-box"><span aria-hidden="true">▧</span><label for="proof-file">Choose a file</label><input id="proof-file" name="proof" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" /><span id="upload-name" class="upload-name">Business licence, registration, or storefront photo</span></div><span class="field-hint">PDF, JPG, PNG, or WebP · up to 5 MB. Optional for this demo. If uploaded, the file is stored on the PaatraSetu server for review.</span></div>` : ''}
       </div><p id="signup-error" class="error-message" role="alert"></p><p class="form-notice"><span>●</span>${role === 'restaurant' ? 'Your pickup pin is shared with nearby volunteers when you post an offer.' : 'Your location is used to find nearby offers. Your exact pin stays private to you.'}</p><div class="form-actions"><button class="button button-primary button-wide" type="submit">Create ${role === 'restaurant' ? 'restaurant' : 'volunteer'} account <span class="button-arrow">→</span></button></div></form></section></div>`;
   }
 
@@ -250,7 +250,17 @@
       error.textContent = 'Please complete the required fields, use a valid email, and choose a password of at least 8 characters.'; return;
     }
     if (!pendingCoords) { error.textContent = 'Tag your GPS location before creating your account.'; return; }
-    if (role === 'restaurant' && (!proof || !proof.name)) { error.textContent = 'Please choose a restaurant proof document or photo.'; return; }
+    if (role === 'restaurant' && proof && proof.name && proof.size > 0) {
+      const allowed = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+      if (!allowed.includes(proof.type)) {
+        error.textContent = 'If you upload a restaurant proof file, use a PDF, JPG, PNG, or WebP file.';
+        return;
+      }
+      if (proof.size > 5 * 1024 * 1024) {
+        error.textContent = 'Restaurant proof must be 5 MB or smaller.';
+        return;
+      }
+    }
     fields.set('role', role);
     fields.set('latitude', String(pendingCoords.lat));
     fields.set('longitude', String(pendingCoords.lon));
