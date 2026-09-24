@@ -4,7 +4,8 @@
   const headerActions = $('#header-actions');
   const dialogRoot = $('#dialog-root');
   const toast = $('#toast');
-  const state = { user: null, donations: [] };
+  const state = { user: null, donations: [], demoMode: false };
+  const demoUser = { id: 'demo-admin', role: 'restaurant', name: 'PaatraSetu Admin', restaurantName: 'Demo Restaurant', email: 'admin@paatrasetu.demo', phone: '0000000000', area: 'Bengaluru', city: 'Bengaluru', coords: { lat: 12.9716, lon: 77.5946 }, radiusKm: 50 };
   let route = 'home';
   let role = 'restaurant';
   let pendingCoords = null;
@@ -70,6 +71,11 @@
   }
 
   async function refresh() {
+    if (state.demoMode) {
+      state.donations = JSON.parse(localStorage.getItem('paatrasetu_demo_donations') || '[]');
+      render();
+      return;
+    }
     if (refreshInProgress) return refreshInProgress;
     refreshInProgress = (async () => {
       const previousId = state.user?.id || null;
@@ -92,7 +98,7 @@
       <section class="hero" aria-labelledby="hero-title">
         <div class="hero-copy">
           <p class="eyebrow">Good food. Shared locally.</p>
-          <h1 id="hero-title">A little extra can go <em>a long way.</em></h1>
+          <h1 id="hero-title">Once, about to be wasted, now feeds <span class="hero-quote-accent">the ones needed.</span></h1>
           <p class="hero-lede">PaatraSetu connects restaurants with nearby volunteers, so fresh surplus food can find its way to people who need it.</p>
           <div class="hero-actions"><button class="button button-primary" type="button" data-action="signup">Join the community <span class="button-arrow">→</span></button><button class="button button-outline" type="button" data-action="signin">I already have an account</button></div>
           <p class="hero-note">A neighbourhood at a time. A meal at a time.</p>
@@ -116,7 +122,7 @@
         <div class="why-copy"><p class="eyebrow">Our why</p><h2>Good food still has somewhere to go.</h2><p>Every day, kitchens make a little more than they need. PaatraSetu makes the next step clearer: a local connection, a quick message, and a pickup that works for everyone.</p></div>
         <div class="why-aside"><p class="why-aside-label">Built around real life</p><div class="why-points"><div class="why-point"><span class="check">✓</span><span>Quick to use on a phone, even on a slower connection.</span></div><div class="why-point"><span class="check">✓</span><span>Pickup details stay clear, from the food to its location.</span></div><div class="why-point"><span class="check">✓</span><span>Restaurants and volunteers each get a view that fits their role.</span></div></div></div>
       </section>
-      <section class="join-strip"><div><h2>Make a little extra mean a lot.</h2><p>Choose your role: donate food as a restaurant or volunteer for nearby pickups.</p></div><div class="hero-actions"><button class="button button-primary" type="button" data-action="join-role" data-role="restaurant">Join as a restaurant <span class="button-arrow">→</span></button><button class="button button-outline" type="button" data-action="join-role" data-role="volunteer">Join as a volunteer</button></div></section>
+      <section class="join-strip"><div><h2>Make a little extra mean a lot.</h2><p>Choose how you would like to contribute to your neighbourhood.</p></div><div class="role-choice-group"><div class="role-choice-donors"><span class="role-choice-label">Donate food</span><div class="hero-actions"><button class="button button-outline" type="button" data-action="join-role" data-role="restaurant">Restaurant</button><button class="button button-outline" type="button" data-action="join-role" data-role="individual">Individual</button></div></div><button class="button button-volunteer" type="button" data-action="join-role" data-role="volunteer">Volunteer for pickups <span class="button-arrow">→</span></button></div></section>
     </div>`;
   }
 
@@ -128,7 +134,7 @@
   function authPage(kind) {
     const isLogin = kind === 'signin';
     if (isLogin) return `<div class="auth-layout">${aside(kind)}<section class="form-panel"><div class="form-topline"><span>Sign in to PaatraSetu</span><button type="button" data-action="signup">Create an account →</button></div><h2>Pick up where you left off.</h2><p class="form-subtitle">Sign in with your account, or use the presentation account below.</p><form id="signin-form" novalidate><div class="form-grid"><div class="field field-full"><label for="login-email">Username or email address</label><input id="login-email" name="email" type="text" autocomplete="username" placeholder="you@example.com or admin" required /></div><div class="field field-full"><label for="login-password">Password</label><input id="login-password" name="password" type="password" autocomplete="current-password" placeholder="Your password" required /></div></div><p class="field-hint">Presentation login: username <strong>admin</strong>, password <strong>admin</strong>.</p><p id="signin-error" class="error-message" role="alert"></p><div class="form-actions"><button class="button button-primary button-wide" type="submit">Sign in <span class="button-arrow">→</span></button></div><p class="form-notice"><span>●</span>Production deployments should replace the demo login with a real server identity provider.</p></form></section></div>`;
-    return `<div class="auth-layout">${aside(kind)}<section class="form-panel"><div class="form-topline"><span>Join the PaatraSetu community</span><button type="button" data-action="signin">Already joined? Sign in</button></div><h2>Join your local food rescue.</h2><p class="form-subtitle">Choose how you’d like to help. Your location lets us find nearby matches.</p><div class="role-switch" role="group" aria-label="Choose account type"><button type="button" data-action="set-role" data-role="restaurant" aria-pressed="${role === 'restaurant'}">Restaurant</button><button type="button" data-action="set-role" data-role="volunteer" aria-pressed="${role === 'volunteer'}">Volunteer</button></div>
+    return `<div class="auth-layout">${aside(kind)}<section class="form-panel"><div class="form-topline"><span>Join the PaatraSetu community</span><button type="button" data-action="signin">Already joined? Sign in</button></div><h2>Join your local food rescue.</h2><p class="form-subtitle">Choose how you’d like to help. Your location lets us find nearby matches.</p><div class="role-switch" role="group" aria-label="Choose account type"><div class="role-switch-donors"><span>Donate food</span><button type="button" data-action="set-role" data-role="restaurant" aria-pressed="${role === 'restaurant'}">Restaurant</button><button type="button" data-action="set-role" data-role="individual" aria-pressed="${role === 'individual'}">Individual</button></div><button class="role-volunteer" type="button" data-action="set-role" data-role="volunteer" aria-pressed="${role === 'volunteer'}">Volunteer</button></div>
       <form id="signup-form" novalidate><div class="form-grid">
         <div class="field ${role === 'restaurant' ? '' : 'field-full'}"><label for="signup-name">${role === 'restaurant' ? 'Owner / contact name' : 'Your name'}</label><input id="signup-name" name="name" autocomplete="name" placeholder="Full name" required /></div>
         ${role === 'restaurant' ? `<div class="field"><label for="signup-restaurant">Restaurant name</label><input id="signup-restaurant" name="restaurantName" autocomplete="organization" placeholder="Name on your storefront" required /></div>` : ''}
@@ -261,7 +267,7 @@
         return;
       }
     }
-    fields.set('role', role);
+    fields.set('role', role === 'individual' ? 'restaurant' : role);
     fields.set('latitude', String(pendingCoords.lat));
     fields.set('longitude', String(pendingCoords.lon));
     try {
@@ -276,8 +282,17 @@
     const fields = new FormData(form);
     try {
       await request('/api/login', { method: 'POST', body: { email: fields.get('email'), password: fields.get('password') } });
+      state.demoMode = false;
       route = 'home'; await refresh(); notify(`Welcome back, ${state.user.name.split(' ')[0]}.`);
-    } catch (e) { error.textContent = e.message; }
+    } catch (e) {
+      if (String(fields.get('email')).trim().toLowerCase() === 'admin' && fields.get('password') === 'admin') {
+        state.demoMode = true;
+        state.user = demoUser;
+        route = 'home';
+        await refresh();
+        notify('Welcome to the presentation demo.');
+      } else error.textContent = e.message;
+    }
   }
 
   async function submitDonation(form) {
@@ -290,6 +305,13 @@
       error.textContent = 'Add a food description, a serving count from 1 to 5,000, and a valid preparation time.'; return;
     }
     try {
+      if (state.demoMode) {
+        const donation = { id: `demo-${Date.now()}`, restaurantId: demoUser.id, restaurantName: demoUser.restaurantName, food, people, madeAt: madeAt.toISOString(), notes: String(fields.get('notes') || ''), status: 'open', volunteerId: null, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), area: demoUser.area, city: demoUser.city, coords: demoUser.coords };
+        const donations = JSON.parse(localStorage.getItem('paatrasetu_demo_donations') || '[]');
+        localStorage.setItem('paatrasetu_demo_donations', JSON.stringify([donation, ...donations]));
+        dialogRoot.innerHTML = ''; await refresh(); notify('Offer shared in presentation mode. Volunteers can be connected when the server is available.');
+        return;
+      }
       const result = await request('/api/donations', { method: 'POST', body: { food, people, madeAt: madeAt.toISOString(), notes: fields.get('notes') } });
       dialogRoot.innerHTML = ''; await refresh();
       notify(result.nearestVolunteer ? `Offer shared. ${result.nearestVolunteer.name} is the nearest volunteer and can see it now.` : 'Offer shared. Nearby volunteers can see it now.');
@@ -311,9 +333,16 @@
   }
 
   async function signOut() {
-    try { await request('/api/logout', { method: 'POST', body: {} }); }
-    catch (e) { notify(e.message); }
-    route = 'home'; dialogRoot.innerHTML = ''; await refresh(); notify('You have signed out.');
+    const wasDemo = state.demoMode;
+    state.user = null;
+    state.donations = [];
+    state.demoMode = false;
+    eventSource?.close(); eventSource = null; eventUserId = null;
+    route = 'home'; dialogRoot.innerHTML = ''; render();
+    try {
+      if (!wasDemo) await request('/api/logout', { method: 'POST', body: {} });
+    } catch (e) { notify(e.message); }
+    notify('You have signed out.');
   }
 
   document.addEventListener('click', event => {
@@ -323,7 +352,7 @@
     if (action === 'signup' || action === 'signin') go(action);
     else if (action === 'home') go('home');
     else if (action === 'set-role') { role = button.dataset.role; pendingCoords = null; render(); }
-    else if (action === 'join-role') { role = button.dataset.role; pendingCoords = null; go('signup'); }
+    else if (action === 'join-role') { role = button.dataset.role; pendingCoords = null; route = 'signup'; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
     else if (action === 'get-gps') getGPS($('#gps-status'));
     else if (action === 'donate-gate') { if (state.user) showDonateModal(); else go('signin'); }
     else if (action === 'open-donate') showDonateModal();
