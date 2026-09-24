@@ -30,8 +30,8 @@
     const response = await fetch(path, options);
     let payload;
     try { payload = await response.json(); }
-    catch { throw new Error('The Goodplate database server did not return a response. Start it with the instructions in README.md.'); }
-    if (!response.ok) throw new Error(payload.error || 'Goodplate could not complete that action. Please try again.');
+    catch { throw new Error('The Paatra Setu database server did not return a response. Start it with the instructions in README.md.'); }
+    if (!response.ok) throw new Error(payload.error || 'Paatra Setu could not complete that action. Please try again.');
     return payload;
   }
 
@@ -89,7 +89,7 @@
         <div class="hero-copy">
           <p class="eyebrow">Good food. Shared locally.</p>
           <h1 id="hero-title">A little extra can go <em>a long way.</em></h1>
-          <p class="hero-lede">Goodplate connects restaurants with nearby volunteers, so fresh surplus food can find its way to people who need it.</p>
+          <p class="hero-lede">Paatra Setu connects restaurants with nearby volunteers, so fresh surplus food can find its way to people who need it.</p>
           <div class="hero-actions"><button class="button button-primary" type="button" data-action="signup">Join the community <span class="button-arrow">→</span></button><button class="button button-outline" type="button" data-action="signin">I already have an account</button></div>
           <p class="hero-note">A neighbourhood at a time. A meal at a time.</p>
         </div>
@@ -109,10 +109,10 @@
         </div>
       </section>
       <section class="why-section" id="our-why" aria-labelledby="why-title">
-        <div class="why-copy"><p class="eyebrow">Our why</p><h2>Good food still has somewhere to go.</h2><p>Every day, kitchens make a little more than they need. Goodplate makes the next step clearer: a local connection, a quick message, and a pickup that works for everyone.</p></div>
+        <div class="why-copy"><p class="eyebrow">Our why</p><h2>Good food still has somewhere to go.</h2><p>Every day, kitchens make a little more than they need. Paatra Setu makes the next step clearer: a local connection, a quick message, and a pickup that works for everyone.</p></div>
         <div class="why-aside"><p class="why-aside-label">Built around real life</p><div class="why-points"><div class="why-point"><span class="check">✓</span><span>Quick to use on a phone, even on a slower connection.</span></div><div class="why-point"><span class="check">✓</span><span>Pickup details stay clear, from the food to its location.</span></div><div class="why-point"><span class="check">✓</span><span>Restaurants and volunteers each get a view that fits their role.</span></div></div></div>
       </section>
-      <section class="join-strip"><div><h2>Make a little extra mean a lot.</h2><p>Sign up as a restaurant or volunteer and start nearby.</p></div><button class="button button-primary" type="button" data-action="signup">Join Goodplate <span class="button-arrow">→</span></button></section>
+      <section class="join-strip"><div><h2>Make a little extra mean a lot.</h2><p>Sign up as a restaurant or volunteer and start nearby.</p></div><button class="button button-primary" type="button" data-action="signup">Join Paatra Setu <span class="button-arrow">→</span></button></section>
     </div>`;
   }
 
@@ -123,8 +123,8 @@
 
   function authPage(kind) {
     const isLogin = kind === 'signin';
-    if (isLogin) return `<div class="auth-layout">${aside(kind)}<section class="form-panel"><div class="form-topline"><span>Sign in to Goodplate</span><button type="button" data-action="signup">Create an account →</button></div><h2>Pick up where you left off.</h2><p class="form-subtitle">Sign in to the shared Goodplate database from any device.</p><form id="signin-form" novalidate><div class="form-grid"><div class="field field-full"><label for="login-email">Email address</label><input id="login-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required /></div><div class="field field-full"><label for="login-password">Password</label><input id="login-password" name="password" type="password" autocomplete="current-password" placeholder="Your password" required /></div></div><p id="signin-error" class="error-message" role="alert"></p><div class="form-actions"><button class="button button-primary button-wide" type="submit">Sign in <span class="button-arrow">→</span></button></div><p class="form-notice"><span>●</span>Your password is checked by the server; only a salted password hash is stored in SQLite.</p></form></section></div>`;
-    return `<div class="auth-layout">${aside(kind)}<section class="form-panel"><div class="form-topline"><span>Join the Goodplate community</span><button type="button" data-action="signin">Already joined? Sign in</button></div><h2>Join your local food rescue.</h2><p class="form-subtitle">Choose how you’d like to help. Your location lets us find nearby matches.</p><div class="role-switch" role="group" aria-label="Choose account type"><button type="button" data-action="set-role" data-role="restaurant" aria-pressed="${role === 'restaurant'}">Restaurant</button><button type="button" data-action="set-role" data-role="volunteer" aria-pressed="${role === 'volunteer'}">Volunteer</button></div>
+    if (isLogin) return `<div class="auth-layout">${aside(kind)}<section class="form-panel"><div class="form-topline"><span>Sign in to Paatra Setu</span><button type="button" data-action="signup">Create an account →</button></div><h2>Pick up where you left off.</h2><p class="form-subtitle">Sign in to the shared Paatra Setu database from any device.</p><form id="signin-form" novalidate><div class="form-grid"><div class="field field-full"><label for="login-email">Email address</label><input id="login-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required /></div><div class="field field-full"><label for="login-password">Password</label><input id="login-password" name="password" type="password" autocomplete="current-password" placeholder="Your password" required /></div></div><p id="signin-error" class="error-message" role="alert"></p><div class="form-actions"><button class="button button-primary button-wide" type="submit">Sign in <span class="button-arrow">→</span></button></div><p class="form-notice"><span>●</span>Your password is checked by the server; only a salted password hash is stored in SQLite.</p></form></section></div>`;
+    return `<div class="auth-layout">${aside(kind)}<section class="form-panel"><div class="form-topline"><span>Join the Paatra Setu community</span><button type="button" data-action="signin">Already joined? Sign in</button></div><h2>Join your local food rescue.</h2><p class="form-subtitle">Choose how you’d like to help. Your location lets us find nearby matches.</p><div class="role-switch" role="group" aria-label="Choose account type"><button type="button" data-action="set-role" data-role="restaurant" aria-pressed="${role === 'restaurant'}">Restaurant</button><button type="button" data-action="set-role" data-role="volunteer" aria-pressed="${role === 'volunteer'}">Volunteer</button></div>
       <form id="signup-form" novalidate><div class="form-grid">
         <div class="field ${role === 'restaurant' ? '' : 'field-full'}"><label for="signup-name">${role === 'restaurant' ? 'Owner / contact name' : 'Your name'}</label><input id="signup-name" name="name" autocomplete="name" placeholder="Full name" required /></div>
         ${role === 'restaurant' ? `<div class="field"><label for="signup-restaurant">Restaurant name</label><input id="signup-restaurant" name="restaurantName" autocomplete="organization" placeholder="Name on your storefront" required /></div>` : ''}
@@ -133,7 +133,7 @@
         <div class="field"><label for="signup-password">Create a password</label><input id="signup-password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128" placeholder="At least 8 characters" required /></div>
         <div class="field"><label for="signup-area">${role === 'restaurant' ? 'Restaurant area / address' : 'Your area / address'}</label><input id="signup-area" name="area" autocomplete="street-address" placeholder="Street, neighbourhood, city" required /></div>
         <div class="field field-full"><label>Tag your pickup area</label><div class="gps-row"><button class="button button-outline button-small" type="button" data-action="get-gps">⌖ Use my GPS location</button><span id="gps-status" class="gps-status">Location is needed to find nearby matches.</span></div><span class="field-hint">Your browser will ask permission. GPS coordinates are used for nearby matching.</span></div>
-        ${role === 'restaurant' ? `<div class="field field-full"><label for="proof-file">Restaurant proof</label><div class="upload-box"><span aria-hidden="true">▧</span><label for="proof-file">Choose a file</label><input id="proof-file" name="proof" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required /><span id="upload-name" class="upload-name">Business licence, registration, or storefront photo</span></div><span class="field-hint">PDF, JPG, PNG, or WebP · up to 5 MB. The file is stored on the Goodplate server for review.</span></div>` : ''}
+        ${role === 'restaurant' ? `<div class="field field-full"><label for="proof-file">Restaurant proof</label><div class="upload-box"><span aria-hidden="true">▧</span><label for="proof-file">Choose a file</label><input id="proof-file" name="proof" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required /><span id="upload-name" class="upload-name">Business licence, registration, or storefront photo</span></div><span class="field-hint">PDF, JPG, PNG, or WebP · up to 5 MB. The file is stored on the Paatra Setu server for review.</span></div>` : ''}
       </div><p id="signup-error" class="error-message" role="alert"></p><p class="form-notice"><span>●</span>${role === 'restaurant' ? 'Your pickup pin is shared with nearby volunteers when you post an offer.' : 'Your location is used to find nearby offers. Your exact pin stays private to you.'}</p><div class="form-actions"><button class="button button-primary button-wide" type="submit">Create ${role === 'restaurant' ? 'restaurant' : 'volunteer'} account <span class="button-arrow">→</span></button></div></form></section></div>`;
   }
 
@@ -163,7 +163,7 @@
     const servings = own.reduce((sum, d) => sum + Number(d.people || 0), 0);
     return `<div class="dashboard" id="home"><div class="welcome-line"><div><p class="eyebrow">Your community, nearby</p><h1>Good to see you, ${esc(user.name.split(' ')[0])}.</h1></div><p>Pickup spot · ${esc(user.area)}${user.city ? `, ${esc(user.city)}` : ''}</p></div>
       <div class="dashboard-grid"><section class="donate-card"><div><div class="donate-card-label"><span></span>For ${esc(user.restaurantName)}</div><h2>Got good food to share?</h2><p>Post what’s ready and nearby volunteers can see it straight away.</p></div><div class="donate-card-bottom"><button class="button button-lime" type="button" data-action="open-donate">Donate food <span class="button-arrow">→</span></button><span class="tiny-note">Add the food, serving estimate, and preparation time. A volunteer can accept the pickup.</span></div></section>
-      <aside class="impact-card"><span class="card-label">Your Goodplate so far</span><div class="impact-number"><strong>${numberOf(servings)}</strong><span>estimated servings shared</span></div><div class="impact-foot">${open ? `${open} open pickup${open === 1 ? '' : 's'} waiting for a neighbour.` : own.length ? 'Thanks for sharing with your neighbourhood.' : 'Your first donation can start right here.'}</div></aside></div>
+      <aside class="impact-card"><span class="card-label">Your Paatra Setu so far</span><div class="impact-number"><strong>${numberOf(servings)}</strong><span>estimated servings shared</span></div><div class="impact-foot">${open ? `${open} open pickup${open === 1 ? '' : 's'} waiting for a neighbour.` : own.length ? 'Thanks for sharing with your neighbourhood.' : 'Your first donation can start right here.'}</div></aside></div>
       <section class="content-section"><div class="content-heading"><div><h2>Your food offers</h2><p>Pickup status and handoff details.</p></div><span class="count-pill">${own.length}</span></div>${own.length ? `<div class="listing-list">${own.map(d => donationCard(d, user)).join('')}</div>` : `<div class="empty-state"><span class="empty-icon">♡</span><h3>Your first food offer will show up here.</h3><p>Share a fresh surplus meal and nearby volunteers can accept the pickup.</p></div>`}</section>
       <div class="demo-message"><strong>Live in-app updates.</strong> Food offers and pickup changes save in the shared SQLite database. WhatsApp or SMS messages are not connected yet.</div>
     </div>`;
@@ -177,7 +177,7 @@
       <section class="volunteer-top"><p class="eyebrow">A good match starts close by</p><h2>Food offers around you.</h2><p>Accept a pickup to let the restaurant know you’re on your way. Distance is estimated from the location each person shared.</p></section>
       <section class="content-section"><div class="content-heading with-controls"><div><h2>Available pickups <span class="count-pill">${nearby.length}</span></h2><p>Fresh offers within your pickup radius.</p></div><label class="radius-control" for="radius-select">Show me within <select id="radius-select" aria-label="Pickup radius">${radiusOptions}</select></label></div>${nearby.length ? `<div class="listing-list">${nearby.map(d => donationCard(d, user, true)).join('')}</div>` : `<div class="empty-state"><span class="empty-icon">⌖</span><h3>No offers within ${Number(user.radiusKm) || 10} km right now.</h3><p>When a local restaurant posts food, it will appear here. Widen your pickup radius or check back soon.</p></div>`}</section>
       <section class="content-section"><div class="content-heading"><div><h2>Your accepted pickups</h2><p>Offers you’ve accepted and their current status.</p></div><span class="count-pill">${accepted.length}</span></div>${accepted.length ? `<div class="listing-list">${accepted.map(d => donationCard(d, user, true)).join('')}</div>` : `<div class="empty-state"><span class="empty-icon">↗</span><h3>No pickups accepted yet.</h3><p>Once you accept a nearby offer, it will be listed here.</p></div>`}</section>
-      <div class="demo-message"><strong>Live in-app updates.</strong> Nearby offers and pickup changes are shared through the Goodplate server. WhatsApp or SMS messages are not connected yet.</div>
+      <div class="demo-message"><strong>Live in-app updates.</strong> Nearby offers and pickup changes are shared through the Paatra Setu server. WhatsApp or SMS messages are not connected yet.</div>
     </div>`;
   }
 
@@ -229,7 +229,7 @@
       return `<div class="alert-item"><span class="alert-bullet">✓</span><div class="alert-copy"><strong>${esc(title)}</strong><p>${esc(body)}</p></div></div>`;
     }).join('');
     const empty = !nearbyRows && !rows ? `<div class="empty-state"><span class="empty-icon">♡</span><h3>All caught up.</h3><p>New food offers and pickup updates will show here.</p></div>` : '';
-    dialogRoot.innerHTML = `<div class="modal-backdrop" data-action="close-modal"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="alerts-title"><button class="modal-close" type="button" data-action="close-modal" aria-label="Close">×</button><p class="eyebrow">In-app updates</p><h2 id="alerts-title">Your pickup activity</h2><p class="modal-intro">New offers and pickup changes from your Goodplate community.</p>${nearbyRows}${rows}${empty}<p class="modal-footnote">Text and WhatsApp alerts are not connected yet.</p></section></div>`;
+    dialogRoot.innerHTML = `<div class="modal-backdrop" data-action="close-modal"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="alerts-title"><button class="modal-close" type="button" data-action="close-modal" aria-label="Close">×</button><p class="eyebrow">In-app updates</p><h2 id="alerts-title">Your pickup activity</h2><p class="modal-intro">New offers and pickup changes from your Paatra Setu community.</p>${nearbyRows}${rows}${empty}<p class="modal-footnote">Text and WhatsApp alerts are not connected yet.</p></section></div>`;
   }
 
   async function submitSignup(form) {
@@ -253,7 +253,7 @@
     try {
       await request('/api/signup', { method: 'POST', body: fields, form: true });
       route = 'home'; pendingCoords = null; await refresh();
-      notify(`Welcome to Goodplate, ${role === 'restaurant' ? restaurantName : name}.`);
+      notify(`Welcome to Paatra Setu, ${role === 'restaurant' ? restaurantName : name}.`);
     } catch (e) { error.textContent = e.message; }
   }
 
