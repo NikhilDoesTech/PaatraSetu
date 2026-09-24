@@ -37,6 +37,9 @@ SESSION_DAYS = 30
 MAX_REQUEST_BYTES = 8 * 1024 * 1024
 PASSWORD_ITERATIONS = 310_000
 TOKEN_RE = re.compile(r"^[0-9a-f]{32}$")
+DEMO_USERNAME = "admin"
+DEMO_PASSWORD = "admin"
+DEMO_EMAIL = "admin@paatrasetu.demo"
 SERVER = None
 
 DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -177,6 +180,54 @@ def make_session(conn, user_id):
     expires = int(time.time()) + SESSION_DAYS * 86400
     conn.execute("INSERT INTO sessions(token_hash,user_id,expires_at) VALUES(?,?,?)", (token_hash, user_id, expires))
     return token
+
+
+def demo_user(conn):
+    """Return the presentation account, creating it only when it is first used."""
+    user = conn.execute("SELECT * FROM users WHERE email=?", (DEMO_EMAIL,)).fetchone()
+    if user:
+        return user
+    salt, password_hash = hash_password(DEMO_PASSWORD)
+    user_id = uuid.uuid4().hex
+    conn.execute(
+        """INSERT INTO users(id,role,name,restaurant_name,email,phone,password_salt,password_hash,
+           area,city,latitude,longitude,radius_km,proof_path,proof_name,created_at)
+           VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (user_id, "restaurant", "PaatraSetu Admin", "Demo Restaurant", DEMO_EMAIL,
+         "0000000000", salt, password_hash, "Bengaluru", "Bengaluru",
+         12.9716, 77.5946, 50, None, None, utc_now()),
+    )
+    return conn.execute("SELECT * FROM users WHERE id=?", (user_id,)).fetchone()
+
+
+def send_sms_notification(volunteer, donation_id):
+    """SMS integration point. Return True after wiring a provider such as Twilio."""
+    # Keep credentials and provider calls on the server, never in the browser.
+    return False
+
+
+def notify_nearest_volunteer(conn, restaurant, donation_id):
+    """Find the nearest eligible volunteer and invoke the future SMS adapter."""
+    volunteers = conn.execute(
+        "SELECT id,name,phone,latitude,longitude,radius_km FROM users WHERE role='volunteer'"
+    ).fetchall()
+    candidates = []
+    for volunteer in volunteers:
+        distance = haversine_km(
+            restaurant["latitude"], restaurant["longitude"],
+            volunteer["latitude"], volunteer["longitude"],
+        )
+        if distance <= volunteer["radius_km"]:
+            candidates.append((distance, volunteer))
+    if not candidates:
+        return None
+    distance, volunteer = min(candidates, key=lambda item: item[0])
+    return {
+        "id": volunteer["id"],
+        "name": volunteer["name"],
+        "distanceKm": distance,
+        "smsQueued": send_sms_notification(volunteer, donation_id),
+    }
 
 
 class PaatraSetuServer(ThreadingHTTPServer):
@@ -491,7 +542,10 @@ class Handler(BaseHTTPRequestHandler):
         if not email or not 1 <= len(password) <= 128:
             raise ValueError("Enter your email and password.")
         with db() as conn:
-            user = conn.execute("SELECT * FROM users WHERE email=? COLLATE NOCASE", (email,)).fetchone()
+            if email == DEMO_USERNAME and password == DEMO_PASSWORD:
+                user = demo_user(conn)
+            else:
+                user = conn.execute("SELECT * FROM users WHERE email=? COLLATE NOCASE", (email,)).fetchone()
             if user is None:
                 # Keep invalid-email attempts close to the normal password check duration.
                 hash_password(password, b"paatrasetu-demo-salt")
@@ -542,10 +596,24 @@ class Handler(BaseHTTPRequestHandler):
                 "INSERT INTO donations(id,restaurant_id,food,people,made_at,notes,status,created_at,updated_at) VALUES(?,?,?,?,?,?,'open',?,?)",
                 (donation_id, user["id"], food, people, made_at.astimezone(timezone.utc).isoformat(timespec="seconds"), notes, now, now),
             )
-            volunteers = conn.execute("SELECT latitude,longitude,radius_km FROM users WHERE role='volunteer'").fetchall()
-            matches = sum(1 for volunteer in volunteers if haversine_km(user["latitude"], user["longitude"], volunteer["latitude"], volunteer["longitude"]) <= volunteer["radius_km"])
+            nearest_volunteer = notify_nearest_volunteer(conn, user, donation_id)
+            volunteers = conn.execute(
+                "SELECT latitude,longitude,radius_km FROM users WHERE role='volunteer'"
+            ).fetchall()
+            matches = sum(
+                1 for volunteer in volunteers
+                if haversine_km(
+                    user["latitude"], user["longitude"],
+                    volunteer["latitude"], volunteer["longitude"],
+                ) <= volunteer["radius_km"]
+            )
         self.server.publish()
-        self.send_json(HTTPStatus.CREATED, {"id": donation_id, "nearbyVolunteers": matches})
+        self.send_json(HTTPStatus.CREATED, {
+            "id": donation_id,
+            "nearbyVolunteers": matches,
+            "nearestVolunteer": nearest_volunteer,
+            "smsQueued": bool(nearest_volunteer and nearest_volunteer["smsQueued"]),
+        })
 
     def change_donation(self, donation_id, action):
         with db() as conn:
