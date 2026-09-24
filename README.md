@@ -15,6 +15,9 @@ Open `http://localhost:8001` and sign in with:
 - Username: `admin`
 - Password: `admin`
 
+Restart the Python process after pulling or copying updated files; an older process keeps
+serving its previous backend code.
+
 The demo account can post food offers. Volunteers can be created from the Join section and
 will see eligible nearby offers in their volunteer dashboard, where they can accept or complete
 a pickup. SMS delivery is intentionally represented by a server-side notification hook in

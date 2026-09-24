@@ -70,6 +70,7 @@ def initialize_database():
             CREATE TABLE IF NOT EXISTS users (
                 id TEXT PRIMARY KEY,
                 role TEXT NOT NULL CHECK(role IN ('restaurant', 'volunteer')),
+                account_type TEXT NOT NULL DEFAULT 'restaurant' CHECK(account_type IN ('restaurant', 'individual', 'volunteer')),
                 name TEXT NOT NULL,
                 restaurant_name TEXT,
                 email TEXT NOT NULL UNIQUE COLLATE NOCASE,
@@ -112,7 +113,7 @@ def initialize_database():
             """
         )
         columns = {row["name"] for row in conn.execute("PRAGMA table_info(users)")}
-        for name, definition in (("state", "TEXT NOT NULL DEFAULT ''"), ("town", "TEXT NOT NULL DEFAULT ''"), ("pincode", "TEXT NOT NULL DEFAULT ''")):
+        for name, definition in (("account_type", "TEXT NOT NULL DEFAULT 'restaurant'"), ("state", "TEXT NOT NULL DEFAULT ''"), ("town", "TEXT NOT NULL DEFAULT ''"), ("pincode", "TEXT NOT NULL DEFAULT ''")):
             if name not in columns:
                 conn.execute(f"ALTER TABLE users ADD COLUMN {name} {definition}")
 
@@ -141,6 +142,7 @@ def safe_user(row):
     return {
         "id": row["id"],
         "role": row["role"],
+        "accountType": row["account_type"],
         "name": row["name"],
         "restaurantName": row["restaurant_name"],
         "email": row["email"],
@@ -197,10 +199,10 @@ def demo_user(conn):
     salt, password_hash = hash_password(DEMO_PASSWORD)
     user_id = uuid.uuid4().hex
     conn.execute(
-        """INSERT INTO users(id,role,name,restaurant_name,email,phone,password_salt,password_hash,
+        """INSERT INTO users(id,role,account_type,name,restaurant_name,email,phone,password_salt,password_hash,
            area,city,latitude,longitude,radius_km,proof_path,proof_name,created_at)
-           VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-        (user_id, "restaurant", "PaatraSetu Admin", "Demo Restaurant", DEMO_EMAIL,
+          VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (user_id, "restaurant", "restaurant", "PaatraSetu Admin", "Demo Restaurant", DEMO_EMAIL,
          "0000000000", salt, password_hash, "Bengaluru", "Bengaluru",
          12.9716, 77.5946, 50, None, None, utc_now()),
     )
@@ -357,7 +359,7 @@ class Handler(BaseHTTPRequestHandler):
                 self.api_get(path)
             except Exception as exc:
                 self.send_json(500, {"error": "The server could not complete that request."})
-                print("API GET error:", type(exc).__name__)
+                print("API GET error:", type(exc).__name__, str(exc))
             return
         self.serve_static(path)
 
@@ -373,7 +375,7 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json(HTTPStatus.BAD_REQUEST, {"error": str(exc)})
         except Exception as exc:
             self.send_json(HTTPStatus.INTERNAL_SERVER_ERROR, {"error": "The server could not complete that request."})
-            print("API POST error:", type(exc).__name__)
+            print("API POST error:", type(exc).__name__, str(exc))
 
     def do_PUT(self):
         if urlparse(self.path).path != "/api/me/radius":
@@ -479,6 +481,7 @@ class Handler(BaseHTTPRequestHandler):
     def signup(self):
         fields = self.read_form()
         role = fields.get("role", "")
+        account_type = fields.get("accountType", role)
         name = fields.get("name", "").strip()
         restaurant_name = fields.get("restaurantName", "").strip()
         email = fields.get("email", "").strip().lower()
@@ -495,6 +498,8 @@ class Handler(BaseHTTPRequestHandler):
             raise ValueError("Tag your GPS location before creating an account.")
         if role not in ("restaurant", "volunteer"):
             raise ValueError("Choose a restaurant or volunteer account.")
+        if account_type not in ("restaurant", "individual", "volunteer") or (role == "volunteer" and account_type != "volunteer") or (role == "restaurant" and account_type not in ("restaurant", "individual")):
+            raise ValueError("Choose a valid account type.")
         if not name or len(name) > 100 or (role == "restaurant" and (not restaurant_name or len(restaurant_name) > 120)):
             raise ValueError("Please enter your name and restaurant name.")
         if not re.fullmatch(r"[^\s@]+@[^\s@]+\.[^\s@]+", email) or len(email) > 254:
@@ -535,10 +540,10 @@ class Handler(BaseHTTPRequestHandler):
         try:
             with db() as conn:
                 conn.execute(
-                    """INSERT INTO users(id,role,name,restaurant_name,email,phone,password_salt,password_hash,
+                    """INSERT INTO users(id,role,account_type,name,restaurant_name,email,phone,password_salt,password_hash,
                        area,city,state,town,pincode,latitude,longitude,radius_km,proof_path,proof_name,created_at)
                        VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-                    (user_id, role, name, restaurant_name or None, email, phone, salt, password_hash,
+                    (user_id, role, account_type, name, restaurant_name or None, email, phone, salt, password_hash,
                      area, city, state, town, pincode, latitude, longitude, 10, proof_path, proof_name, created_at),
                 )
                 token = make_session(conn, user_id)

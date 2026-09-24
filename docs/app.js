@@ -5,7 +5,7 @@
   const dialogRoot = $('#dialog-root');
   const toast = $('#toast');
   const state = { user: null, donations: [], mealsSaved: 0, demoMode: false };
-  const demoUser = { id: 'demo-admin', role: 'restaurant', name: 'PaatraSetu Admin', restaurantName: 'Demo Restaurant', email: 'admin@paatrasetu.demo', phone: '0000000000', area: 'Bengaluru', city: 'Bengaluru', state: 'Karnataka', town: 'Bengaluru', pincode: '560001', coords: { lat: 12.9716, lon: 77.5946 }, radiusKm: 50 };
+  const demoUser = { id: 'demo-admin', role: 'restaurant', accountType: 'restaurant', name: 'PaatraSetu Admin', restaurantName: 'Demo Restaurant', email: 'admin@paatrasetu.demo', phone: '0000000000', area: 'Bengaluru', city: 'Bengaluru', state: 'Karnataka', town: 'Bengaluru', pincode: '560001', coords: { lat: 12.9716, lon: 77.5946 }, radiusKm: 50 };
   let route = 'home';
   let role = 'restaurant';
   let pendingCoords = null;
@@ -145,7 +145,8 @@
     menu.className = 'profile-menu';
     menu.setAttribute('role', 'dialog');
     menu.setAttribute('aria-label', 'Registered user details');
-    menu.innerHTML = `<div class="profile-menu-heading"><span class="profile-menu-kicker">Your PaatraSetu profile</span><button type="button" class="profile-close" aria-label="Close profile" data-action="profile-close">×</button></div><div class="profile-summary"><span class="profile-large-avatar">${esc(initials(user.name))}</span><div><strong>${esc(user.name)}</strong><span>${user.role === 'volunteer' ? 'Volunteer' : esc(user.restaurantName || 'Individual donor')}</span></div></div><dl class="profile-details"><div><dt>Email</dt><dd>${esc(user.email)}</dd></div><div><dt>Phone</dt><dd>${esc(user.phone)}</dd></div><div><dt>Location</dt><dd>${esc(user.town || user.city)}, ${esc(user.state || '')} ${esc(user.pincode || '')}</dd></div>${user.role === 'volunteer' ? `<div><dt>Pickup radius</dt><dd>${numberOf(user.radiusKm)} km</dd></div>` : ''}</dl>`;
+    const accountLabel = user.role === 'volunteer' ? 'Volunteer' : user.accountType === 'individual' ? 'Individual donor' : 'Restaurant';
+    menu.innerHTML = `<div class="profile-menu-heading"><span class="profile-menu-kicker">Your PaatraSetu profile</span><button type="button" class="profile-close" aria-label="Close profile" data-action="profile-close">×</button></div><div class="profile-summary"><span class="profile-large-avatar">${esc(initials(user.name))}</span><div><strong>${esc(user.name)}</strong><span>${accountLabel}</span></div></div><dl class="profile-details"><div><dt>Email</dt><dd>${esc(user.email)}</dd></div><div><dt>Phone</dt><dd>${esc(user.phone)}</dd></div><div><dt>Location</dt><dd>${esc(user.town || user.city)}, ${esc(user.state || '')} ${esc(user.pincode || '')}</dd></div>${user.role === 'volunteer' ? `<div><dt>Pickup radius</dt><dd>${numberOf(user.radiusKm)} km</dd></div>` : ''}</dl>`;
     headerActions.appendChild(menu);
   }
 
@@ -372,6 +373,7 @@
       }
     }
     fields.set('role', role === 'individual' ? 'restaurant' : role);
+    fields.set('accountType', role);
     if (role === 'individual' && !fields.get('restaurantName')) fields.set('restaurantName', `${name}'s kitchen`);
     fields.set('latitude', String(pendingCoords.lat));
     fields.set('longitude', String(pendingCoords.lon));
@@ -384,6 +386,7 @@
       const account = {
         id: `demo-user-${Date.now()}`,
         role: role === 'individual' ? 'restaurant' : role,
+        accountType: role,
         name,
         restaurantName: role === 'individual' ? `${name}'s kitchen` : restaurantName,
         email,
