@@ -70,6 +70,11 @@ h1, h2, h3 { font-family: Manrope, 'DM Sans', sans-serif; }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
 .button-arrow { display: inline-block; font-size: 19px; font-weight: 400; line-height: 12px; }
 .hero-note { margin: 22px 0 0; color: #828d84; font-size: 11px; }
+.select-shell { position: relative; }
+.select-shell select { appearance: none; padding-right: 38px; cursor: pointer; }
+.select-shell select:focus { border-color: #a57a2e; box-shadow: 0 0 0 3px rgba(165,122,46,.13); }
+.select-chevron { position: absolute; top: 50%; right: 14px; pointer-events: none; transform: translateY(-55%); color: #805e2a; font-family: Georgia, serif; font-size: 18px; }
+.location-select-field .field-hint { color: #8b7041; }
 .impact-meter { display: flex; align-items: center; gap: 15px; width: fit-content; margin: 24px 0 8px; padding: 12px 17px; border: 1px solid var(--line); border-radius: 14px; background: var(--white); box-shadow: var(--shadow); }
 .impact-meter-icon { color: #a57a2e; font-size: 20px; }
 .impact-meter div { display: flex; align-items: baseline; gap: 8px; }
@@ -498,6 +503,94 @@ h1, h2, h3 { font-family: Manrope, 'DM Sans', sans-serif; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }
+
+/* Traditional Indian visual layer: restrained jaali, rangoli, and brass details. */
+body {
+  background-image: radial-gradient(rgba(128,94,42,.07) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+.site-header {
+  border-bottom: 2px solid #b38a48;
+  box-shadow: 0 5px 0 rgba(128,94,42,.08);
+}
+.site-header::before {
+  content: '◆  ◇  ◆  ◇  ◆';
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  z-index: 3;
+  padding: 0 10px;
+  transform: translateX(-50%);
+  background: var(--paper);
+  color: #a57a2e;
+  font-size: 8px;
+  letter-spacing: 4px;
+}
+.brand { font-family: 'Noto Serif', Georgia, serif; letter-spacing: -.5px; }
+.brand-mark { color: #805e2a; }
+.eyebrow { letter-spacing: 2px; }
+.hero {
+  position: relative;
+  border-bottom: 1px solid rgba(165,122,46,.25);
+}
+.hero::before,
+.hero::after {
+  content: '✥';
+  position: absolute;
+  color: rgba(165,122,46,.34);
+  font-size: 30px;
+}
+.hero::before { top: 35px; left: 2%; }
+.hero::after { right: 2%; bottom: 30px; }
+.impact-meter {
+  border: 1px solid #c6a463;
+  border-radius: 4px 16px 4px 16px;
+  background: linear-gradient(135deg, rgba(255,250,241,.96), rgba(241,231,207,.85));
+}
+.step-card,
+.why-section,
+.join-strip,
+.auth-aside,
+.modal,
+.listing-card {
+  border-radius: 4px 18px 4px 18px;
+}
+.step-card::before,
+.listing-card::before {
+  content: '❋';
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  color: rgba(165,122,46,.28);
+  font-size: 14px;
+}
+.step-card { position: relative; border-color: #d8c49e; background: rgba(255,250,241,.82); }
+.why-section { border: 1px solid #d8c49e; background: rgba(239,229,209,.82); }
+.join-strip { border: 1px solid #b38a48; }
+.auth-layout { position: relative; }
+.auth-layout::before {
+  content: '✥';
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  color: #a57a2e;
+  font-size: 17px;
+}
+.auth-aside { border: 1px solid rgba(211,179,107,.5); }
+.form-panel {
+  padding: 24px 25px;
+  border: 1px solid #d8c49e;
+  border-radius: 4px 20px 4px 20px;
+  background: rgba(255,250,241,.78);
+}
+.role-switch { border-color: #cbb27e; background: #eee4d1; }
+.role-switch-donors { background: rgba(255,250,241,.7); }
+.field input, .field select, .field textarea {
+  border-color: #d8c49e;
+  background: rgba(255,250,241,.95);
+}
+.upload-box { border-color: #c6a463; background: #f7efdf; }
+.site-footer { border-top: 2px solid #b38a48; }
 
 /* Warm, restrained Indian traditional palette: ink, turmeric, and old brass. */
 :root {
