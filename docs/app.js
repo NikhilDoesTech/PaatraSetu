@@ -199,7 +199,7 @@
           <p class="hero-note">A neighbourhood at a time. A meal at a time.</p>
         </div>
         <div class="hero-visual" aria-hidden="true">
-          <div class="hero-orbit"></div><div class="plate" aria-label="A traditional Indian thali"><div class="plate-inner"><i class="dish-bowl dal-bowl"></i><i class="dish-bowl sabzi-bowl"></i><i class="dish-rice"></i><i class="dish-roti roti-one"></i><i class="dish-roti roti-two"></i><i class="dish-tomato tomato-one"></i><i class="dish-tomato tomato-two"></i><i class="dish-samosa"></i><i class="dish-laddoo"></i><i class="dish-garnish"></i></div></div>
+          <div class="hero-orbit"></div><div class="plate"><img class="plate-inner" src="assets/paatrasetu-thali.svg" alt="Traditional Indian thali with dal, curry, rice, rotis and salad" /></div>
           <span class="spark">✳</span><div class="floating-note note-one"><span class="floating-icon">⌖</span><span class="floating-copy"><strong>Closer, kinder pickups</strong><span>Matched around your neighbourhood</span></span></div>
           <div class="floating-note note-two"><span class="floating-icon orange">♡</span><span class="floating-copy"><strong>Dal, roti, and sabzi</strong><span>Traditional meals, shared with care.</span></span></div>
           <div class="hero-seal">MADE FOR<br>NEIGHBOURS<br><span>✥</span></div>
