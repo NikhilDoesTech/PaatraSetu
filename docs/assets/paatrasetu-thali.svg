@@ -3,17 +3,17 @@
   <desc id="desc">A warm illustrated thali with dal, curry, rice, rotis, salad and chutney.</desc>
   <defs>
     <radialGradient id="thali" cx="45%" cy="35%">
-      <stop offset="0" stop-color="#fff9e9"/>
-      <stop offset=".78" stop-color="#e7c987"/>
-      <stop offset="1" stop-color="#b8843d"/>
+      <stop offset="0" stop-color="#f8e8bd"/>
+      <stop offset=".78" stop-color="#d1a15a"/>
+      <stop offset="1" stop-color="#95602f"/>
     </radialGradient>
     <linearGradient id="roti" x2="0" y2="1">
-      <stop stop-color="#f4c879"/>
-      <stop offset="1" stop-color="#bd7135"/>
+      <stop stop-color="#e3ad5f"/>
+      <stop offset="1" stop-color="#a85e2f"/>
     </linearGradient>
     <radialGradient id="dal">
-      <stop stop-color="#f7c75d"/>
-      <stop offset="1" stop-color="#bd692d"/>
+      <stop stop-color="#e3ad42"/>
+      <stop offset="1" stop-color="#a45229"/>
     </radialGradient>
     <radialGradient id="curry">
       <stop stop-color="#c77838"/>
