@@ -11,10 +11,15 @@ It's a project for AMIHACKS, But also a foundation for something bigger, Somethi
 2) Github pages to display the fronted.
 # Project structure:
 in docs/
+  
   index.html - contails the App Shell
+  
   app.js     - User interface and browser-side behavior
+  
   styles.css - Layout and styling
+  
   server.py  - Python HTTP server and JSON API
+  
   assets/    - Logos and other visual assets
 
   ________
