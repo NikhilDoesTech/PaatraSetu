@@ -85,7 +85,7 @@ h1, h2, h3 { font-family: Manrope, 'DM Sans', sans-serif; }
 .hero-orbit::before { content: ''; position: absolute; inset: 8%; border: 1px solid rgba(33,79,60,.10); border-radius: inherit; }
 .hero-orbit::after { content: ''; position: absolute; inset: 18%; border: 1px dashed rgba(33,79,60,.11); border-radius: inherit; }
 .plate { width: min(79%, 370px); aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; background: #fffcf3; box-shadow: 0 26px 65px rgba(43, 72, 45, .16), inset 0 0 0 14px #f7f1df, inset 0 0 0 18px #ebe1c9; transform: rotate(-8deg); }
-.plate-inner { width: 70%; height: 70%; position: relative; overflow: hidden; border-radius: 50%; background: #d7e2bd; box-shadow: inset 0 2px 15px rgba(43,72,45,.13); }
+.plate-inner { width: 78%; height: 78%; display: block; object-fit: contain; border-radius: 50%; filter: drop-shadow(0 2px 10px rgba(43,72,45,.13)); }
 .dish-bowl { position: absolute; display: block; width: 27%; aspect-ratio: 1.35; border-radius: 50%; background: #b9663e; border: 3px solid #e6bd72; box-shadow: inset 0 -7px 0 rgba(91,48,29,.14); }
 .dish-bowl::after { content: ''; position: absolute; inset: 18%; border-radius: 50%; background: #d98b43; }
 .dal-bowl { top: 16%; left: 17%; }
