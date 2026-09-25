@@ -92,8 +92,16 @@ h1, h2, h3 { font-family: Manrope, 'DM Sans', sans-serif; }
 .dal-bowl::after { background: #dca64c; }
 .sabzi-bowl { top: 16%; right: 15%; background: #5a7b4a; }
 .sabzi-bowl::after { background: #7e9b50; }
-.dish-roti { position: absolute; top: 41%; left: 31%; width: 38%; height: 22%; border-radius: 50%; background: #d8a35d; border: 3px solid #b8793d; box-shadow: inset 0 0 0 5px rgba(255,226,157,.3); transform: rotate(-10deg); }
-.dish-roti::after { content: ''; position: absolute; inset: 28% 17%; border-top: 2px solid rgba(118,67,32,.35); border-bottom: 2px solid rgba(118,67,32,.35); border-radius: 50%; }
+.dish-roti { position: absolute; left: 29%; width: 42%; height: 16%; border-radius: 50%; background: #d9a45f; border: 3px solid #ae6d35; box-shadow: inset 0 0 0 5px rgba(255,226,157,.3), 0 4px 0 rgba(117,66,29,.14); }
+.dish-roti::after { content: ''; position: absolute; inset: 26% 16%; border-top: 2px solid rgba(118,67,32,.35); border-bottom: 2px solid rgba(118,67,32,.35); border-radius: 50%; }
+.roti-one { top: 43%; transform: rotate(-8deg); }
+.roti-two { top: 49%; transform: rotate(7deg); background: #e2b16c; }
+.dish-tomato { position: absolute; width: 13%; aspect-ratio: 1; border-radius: 50%; background: #c9573e; border: 3px solid #a64031; box-shadow: inset -3px -3px 0 rgba(106,37,26,.16); }
+.dish-tomato::after { content: ''; position: absolute; inset: 33%; border-radius: 50%; background: #f0b06a; }
+.tomato-one { left: 20%; top: 61%; }
+.tomato-two { left: 31%; top: 67%; width: 11%; }
+.dish-rice { position: absolute; right: 18%; bottom: 33%; width: 26%; height: 18%; border-radius: 50% 50% 42% 42%; background: #f4e5bd; border: 2px solid #d5b77a; box-shadow: inset 6px 3px 0 rgba(255,255,240,.62), inset -5px -4px 0 rgba(191,151,79,.15); transform: rotate(6deg); }
+.dish-rice::before { content: '••••'; position: absolute; top: 6%; left: 19%; color: #c7a56b; font-size: 13px; letter-spacing: 3px; }
 .dish-samosa { position: absolute; bottom: 19%; left: 16%; width: 22%; height: 22%; background: #d48a3e; border: 3px solid #9d5f2c; clip-path: polygon(50% 0, 100% 86%, 0 86%); transform: rotate(-8deg); }
 .dish-laddoo { position: absolute; right: 18%; bottom: 20%; width: 19%; aspect-ratio: 1; border-radius: 50%; background: #dcae42; border: 3px solid #a97424; box-shadow: inset -5px -5px 0 rgba(130,72,19,.14); }
 .dish-garnish { position: absolute; right: 42%; bottom: 13%; width: 13%; height: 7%; border-radius: 50%; background: #66864d; transform: rotate(-18deg); }
