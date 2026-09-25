@@ -30,7 +30,7 @@ button { color: inherit; }
 .site-header { height: 82px; display: flex; align-items: center; justify-content: space-between; padding: 0 clamp(20px, 6.2vw, 96px); background: rgba(247,247,242,.95); border-bottom: 1px solid rgba(226,230,222,.75); }
 .brand { position: relative;
 display: inline-flex; align-items: center; gap: 8px; color: var(--green); text-decoration: none; font-family: Manrope, sans-serif; font-size: 21px; font-weight: 800; letter-spacing: -1.1px; }
-.brand-logo { width: 42px; height: 38px; flex: 0 0 auto; object-fit: contain; filter: invert(39%) sepia(23%) saturate(865%) hue-rotate(355deg) brightness(89%) contrast(87%); }
+.brand-logo { width: 34px; height: 31px; flex: 0 0 auto; object-fit: contain; filter: invert(39%) sepia(23%) saturate(865%) hue-rotate(355deg) brightness(89%) contrast(87%); }
 .brand-period { color: #9bb952; }
 .header-nav, .header-actions { display: flex; align-items: center; gap: 34px; }
 .header-nav a { color: #5c675f; font-size: 13px; text-decoration: none; }
@@ -422,7 +422,7 @@ h1, h2, h3 { font-family: Manrope, 'DM Sans', sans-serif; }
 @media (max-width: 650px) {
   .site-header { height: 70px; padding: 0 17px; }
   .brand { font-size: 19px; }
-  .brand-logo { width: 34px; height: 32px; }
+  .brand-logo { width: 29px; height: 27px; }
   .header-nav { display: none; }
   .header-actions { gap: 4px; }
   .header-actions .link-button { padding: 9px 8px; font-size: 11px; }
@@ -801,7 +801,7 @@ h1, h2, h3, .brand, .step-number, .hero-seal, .impact-number strong {
 @media (max-width: 390px) {
   .site-header { padding-inline: 12px; }
   .brand { font-size: 17px; gap: 5px; }
-  .brand-logo { width: 30px; height: 28px; }
+  .brand-logo { width: 26px; height: 24px; }
   .header-donate { min-height: 35px; padding-inline: 8px; font-size: 9px; }
   .page-shell { padding-inline: 14px; }
   .hero h1 { font-size: 43px; }
